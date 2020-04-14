@@ -5,6 +5,8 @@ const Specifications = db.specifications;
 const Specificationsmobile = db.specificationsmobile;
 const Specificationslaptop = db.specificationslaptop;
 
+const Op = require("sequelize").Op;
+
 exports.save = async (req, res) => {
     let { catalog, specifications } = req.body;
     let specificationsProduct;
@@ -280,6 +282,29 @@ exports.findMobiles = async (req, res) => {
         return res.status(500).json({
             error: error.message
         });
+    }
+}
+
+//localhost:8080/api/catalog/seach?keyword=tuandz
+exports.seachCatalog = async (req, res) => {
+    let {keyword} = req.query;
+    try {
+        let catalogs = await Catalog.findAll({
+            where: {
+                name: { [Op.substring]: keyword }
+            }
+        });
+        if(catalogs.length == 0){
+            return res.json({
+                error: `Can not find any catalog with keyword: ${keyword}`
+            })
+        }else{
+            return res.status(200).json(catalogs);
+        }
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message
+        })
     }
 }
 

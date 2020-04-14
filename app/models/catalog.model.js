@@ -15,7 +15,7 @@ module.exports = (sequelize, Sequelize) => {
         content: {
             type: Sequelize.TEXT
         },
-        quntity: {
+        quantity: {
             type: Sequelize.INTEGER
         },
         metatitle: {
