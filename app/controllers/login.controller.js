@@ -8,10 +8,11 @@ var bcrypt = require("bcryptjs");
 exports.login = async (req, res) => {
     let { username, password } = req.body;
     try {
-        let user = await User.findOne({ attributes: ["username", "password"], where: { username: username } });
+        let user = await User.findOne({ attributes: ["id", "username", "password"], where: { username: username } });
+        console.log(user);
         if (user != null) {
-            if (bcrypt.compareSync(password, users.password)) {
-                res.status(200).json(user.id);
+            if (bcrypt.compareSync(password, user.password)) {
+                return res.status(200).json({id: user.id});
             }
         }
     } catch (error) {
@@ -31,7 +32,7 @@ exports.register = async (req, res) => {
             status: true,
             phonenumber: req.body.phonenumber,
             address: req.body.address,
-            gender: req.body.gender,
+            gender: 3,
             password: bcrypt.hashSync(req.body.password, 12)
         }, { transaction });
         if (user != null) {

@@ -16,7 +16,10 @@ exports.adminBoard = (req, res) => {
 
 exports.update = async (req, res) => {
     let user = req.body;
-    user.password = bcrypt.hashSync(user.password, 12);
+    console.log(user);
+    if(user.password){
+        user.password = bcrypt.hashSync(user.password, 12);
+    }
     try {
         let data = await User.update(user, { where: { id: user.id } });
         if(data == 1){

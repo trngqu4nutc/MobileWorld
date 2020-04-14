@@ -15,10 +15,13 @@ router.get("/detail/:id", catalog.findDetailByCatalodId);
 //localhost:8080/api/catalog/seach?keyword=tuandz tim kiem
 router.get("/seach", catalog.seachCatalog);
 
+//localhost:8080/api/catalog/suggest?keyword=tuandz
+router.get("/suggest", catalog.getListName);
+
 //localhost:8080/api/homepage
 router.get("/home", catalog.findHome);
 
-//localhost:8080/api/mobile
+//localhost:8080/api/catalog/mobile
 router.get("/mobile", catalog.findMobiles);
 
 //localhost:8080/api/laptop
