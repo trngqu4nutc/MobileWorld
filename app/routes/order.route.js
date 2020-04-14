@@ -16,7 +16,7 @@ router.put("/", [validate.validateId], order.saveOderItems);
 //localhost:8080/api/order?id=1&catalogid=1
 router.delete("/", [validate.validateId], order.deleteOnCart);
 
-//localhost:8080/api/order/accept dat hang status=1
+//localhost:8080/api/order/accept dat hang
 router.post("/accept", [validate.validateId], order.acceptOrder);
 
 module.exports = router;
