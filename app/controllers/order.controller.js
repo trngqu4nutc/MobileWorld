@@ -26,11 +26,13 @@ exports.addOrder = async (req, res) => {
 exports.addCatalogInCart = async (req, res) => {
     let buyerid = req.body.id;
     let catalog = req.body.catalog;
+    let transaction = await db.sequelize.transaction();
     try {
         let order = await Order.findOne({ where: { buyerid: buyerid } });
         catalog.orderid = order.id;
-        catalog = await OrderItems.create(catalog);
+        catalog = await OrderItems.create(catalog, { transaction });
         if (catalog != null) {
+            await transaction.commit();
             return res.status(200).json({
                 message: "Add to cart successfully"
             });
@@ -40,9 +42,12 @@ exports.addCatalogInCart = async (req, res) => {
             });
         }
     } catch (error) {
-        return res.status(500).json({
-            error: error.message
-        });
+        if (transaction) {
+            await transaction.rollback();
+            return res.status(500).json({
+                error: error.message
+            });
+        }
     }
 }
 
@@ -53,8 +58,8 @@ exports.saveOderItems = async (req, res) => {
         let order = await Order.findOne({ where: { buyerid: buyerid } });
         catalogs.forEach(async (element) => {
             try {
-                element.orderid = order.id;
-                await OrderItems.update(element);
+                let item = await OrderItems.findOne({ where: { catalogname: element.catalogname, orderid: order.id } })
+                await OrderItems.update(element, { where: { id: item.id, orderid: order.id } });
             } catch (error) {
                 return res.status(500).json({
                     error: error.message
@@ -92,18 +97,23 @@ exports.acceptOrder = async (req, res) => {
 }
 
 exports.deleteOnCart = async (req, res) => {
-    let {buyerid, catalogid} = req.query;
+    let { buyerid, catalogid } = req.query;
+    let transaction = await db.sequelize.transaction();
     try {
         let order = await Order.findOne({ where: { buyerid: buyerid } });
-        let result = await OrderItems.destroy({ where: { catalogid: catalogid, orderid: order.id } })
-        if(result == 1){
+        let result = await OrderItems.destroy({ where: { catalogid: catalogid, orderid: order.id } }, { transaction })
+        if (result == 1) {
+            await transaction.commit();
             return res.status(200).json({
                 message: "Delete on cart successfully"
             });
         } else {
-            return res.status(500).json({
-                error: `Can not delete on cart with id: ${catalogid}`
-            });
+            if (transaction) {
+                transaction.rollback();
+                return res.status(500).json({
+                    error: `Can not delete on cart with id: ${catalogid}`
+                });
+            }
         }
     } catch (error) {
         return res.status(500).json({
