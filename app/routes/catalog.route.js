@@ -12,6 +12,9 @@ router.get("/view/:id", catalog.findByCatalodId);
 //localhost:8080/api/catalog/detail/{id} chi tiết sản phẩm
 router.get("/detail/:id", catalog.findDetailByCatalodId);
 
+//localhost:8080/api/catalog/seach?keyword=tuandz tim kiem
+router.get("/seach", catalog.seachCatalog);
+
 //localhost:8080/api/homepage
 router.get("/home", catalog.findHome);
 
