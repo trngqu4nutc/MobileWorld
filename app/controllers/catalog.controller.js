@@ -259,25 +259,23 @@ exports.findMobiles = async (req, res) => {
     try {
         let newCatalogs = {
             title: "San pham moi",
-            product: await getListCatalog('createdAt', 'DESC', 1, 6),
+            products: await getListCatalog('createdAt', 'DESC', 1, 6),
             mode: -1
         }
         let highCatalogs = {
             title: "Noi bat",
-            product: await getListCatalog('price', 'DESC', 1, 6),
+            products: await getListCatalog('price', 'DESC', 1, 6),
             mode: -1
         }
         let listCatalog = {
             title: "Mat Hang",
-            product: await Catalog.findAll({
+            products: await Catalog.findAll({
                 attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
                 offset: 0, limit: 6,
                 where: { catalogtypeid: 1 }
             })
         }
-        res.status(200).json({
-            list: [newCatalogs, highCatalogs, listCatalog]
-        });
+        res.status(200).json([newCatalogs, highCatalogs, listCatalog]);
     } catch (error) {
         return res.status(500).json({
             error: error.message
@@ -285,26 +283,48 @@ exports.findMobiles = async (req, res) => {
     }
 }
 
-//localhost:8080/api/catalog/seach?keyword=tuandz
+//localhost:8080/api/catalog/seach?keyword=tuandz?offset=1?limit=2
 exports.seachCatalog = async (req, res) => {
-    let {keyword} = req.query;
+    let { keyword, offset, limit } = req.query;
+    console.log(keyword);
     try {
         let catalogs = await Catalog.findAll({
+            attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
+            offset: parseInt(offset) - 1,
+            limit: parseInt(limit),
             where: {
                 name: { [Op.substring]: keyword }
             }
         });
-        if(catalogs.length == 0){
-            return res.json({
+        if (catalogs.length == 0) {
+            return res.status(200).json({
                 error: `Can not find any catalog with keyword: ${keyword}`
-            })
-        }else{
+            });
+        } else {
             return res.status(200).json(catalogs);
         }
     } catch (error) {
         return res.status(500).json({
             error: error.message
-        })
+        });
+    }
+}
+
+//localhost:8080/api/catalog/suggest?keyword=tuandz
+exports.getListName = async (req, res) => {
+    let {keyword} = req.query;
+    try {
+        let result = await Catalog.findAll({
+            attributes: ['name'],
+            where: {
+                name: { [Op.substring]: keyword }
+            }
+        });
+        return res.status(200).json(castToListName(result));
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message
+        });
     }
 }
 
@@ -356,4 +376,12 @@ const getListCatalogOffset = async (offset) => {
         attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
         offset: offset, limit: 6
     });
+}
+
+const castToListName = (list) => {
+    let result = [];
+    list.forEach(item => {
+        result.push(item.name);
+    });
+    return result;
 }
