@@ -58,8 +58,8 @@ exports.addCatalogInCart = async (req, res) => {
     let transaction = await db.sequelize.transaction();
     try {
         let order = await Order.findOne({ where: { buyerid: buyerid } });
-        if (order.status == 0) {
-            if (order != null) {
+        if (order != null) {
+            if (order.status == 0) {
                 catalog.orderid = order.id;
                 let result = await OrderItems.findOne({ where: { orderid: order.id, catalogid: catalog.catalogid } });
                 console.log(result);
@@ -81,24 +81,24 @@ exports.addCatalogInCart = async (req, res) => {
                     }
                 }
             } else {
-                order = await Order.create({ buyerid: buyerid, status: 0 }, { transaction });
-                catalog.orderid = order.id;
-                catalog = await OrderItems.create(catalog, { transaction });
-                if (catalog != null) {
-                    await transaction.commit();
-                    return res.status(200).json({
-                        message: "Add to cart successfully"
-                    });
-                } else {
-                    return res.status(500).json({
-                        error: `Can not add to cart with id: ${order.id}`
-                    });
-                }
+                return res.status(500).json({
+                    error: "Cart not avaiable"
+                });
             }
         } else {
-            return res.status(500).json({
-                error: "Cart not avaiable"
-            });
+            order = await Order.create({ buyerid: buyerid, status: 0 }, { transaction });
+            catalog.orderid = order.id;
+            catalog = await OrderItems.create(catalog, { transaction });
+            if (catalog != null) {
+                await transaction.commit();
+                return res.status(200).json({
+                    message: "Add to cart successfully"
+                });
+            } else {
+                return res.status(500).json({
+                    error: `Can not add to cart with id: ${order.id}`
+                });
+            }
         }
     } catch (error) {
         if (transaction) {
