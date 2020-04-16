@@ -6,6 +6,9 @@ const verifySignUp = require("../middleware/verifySignUp");
 //localhost:8080/api/login
 router.post("/", login.login);
 
+//localhost:8080/api/login/loginfacebook
+router.post("/loginfacebook", login.loginByFacebook);
+
 router.post("/register", [verifySignUp.checkDuplicateUsername], login.register);
 
 module.exports = router;

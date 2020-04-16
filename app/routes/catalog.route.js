@@ -18,14 +18,18 @@ router.get("/seach", catalog.seachCatalog);
 //localhost:8080/api/catalog/suggest?keyword=tuandz
 router.get("/suggest", catalog.getListName);
 
-//localhost:8080/api/homepage
+//localhost:8080/api/catalog/homepage
 router.get("/home", catalog.findHome);
 
 //localhost:8080/api/catalog/mobile
 router.get("/mobile", catalog.findMobiles);
 
-//localhost:8080/api/laptop
+//localhost:8080/api/catalog/laptop
 router.get("/laptop", catalog.findLaptops);
+
+//localhost:8080/api/catalog/load?page=home&title=noi-bat&offset=2&limit=6
+router.get("/load", catalog.getCatalogLoad);
+
 
 router.post("/", catalog.save);
 

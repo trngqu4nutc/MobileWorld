@@ -54,7 +54,7 @@ exports.register = async (req, res) => {
     }
 };
 
-exports.loginByFb = async (req, res) => {
+exports.loginByFacebook = async (req, res) => {
     let { name, id, email } = req.body;
     try {
         let user = await User.findOne({ username: name });

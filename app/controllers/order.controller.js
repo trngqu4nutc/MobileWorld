@@ -2,6 +2,35 @@ const db = require("../models/index");
 const Order = db.order;
 const OrderItems = db.orderitems;
 
+exports.getCatalogInCart = async (req, res) => {
+    let buyerid = req.query.id;
+    try {
+        let order = await Order.findOne({ where: { buyerid: buyerid } });
+        if (order != null) {
+            let result = await OrderItems.findAll({
+                attributes: ['catalogid', 'pictureuri', 'catalogname', 'unit', 'unitprice'],
+                where: { orderid: order.id }
+            });
+            if (result.length == 0) {
+                return res.status(200).json({
+                    error: "You have no items in your shopping cart!"
+                });
+            } else {
+                return res.status(200).json(result);
+            }
+        } else {
+            await Order.create({ buyerid: buyerid, status: 0 });
+            return res.status(200).json({
+                error: "You have no items in your shopping cart!"
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+}
+
 exports.addOrder = async (req, res) => {
     let buyerid = req.body.id;
     try {
@@ -29,16 +58,46 @@ exports.addCatalogInCart = async (req, res) => {
     let transaction = await db.sequelize.transaction();
     try {
         let order = await Order.findOne({ where: { buyerid: buyerid } });
-        catalog.orderid = order.id;
-        catalog = await OrderItems.create(catalog, { transaction });
-        if (catalog != null) {
-            await transaction.commit();
-            return res.status(200).json({
-                message: "Add to cart successfully"
-            });
+        if (order.status == 0) {
+            if (order != null) {
+                catalog.orderid = order.id;
+                let result = await OrderItems.findOne({ where: { orderid: order.id, catalogid: catalog.catalogid } });
+                console.log(result);
+                if (result != null) {
+                    return res.status(200).json({
+                        error: "Catalog was exists!"
+                    });
+                } else {
+                    catalog = await OrderItems.create(catalog, { transaction });
+                    if (catalog != null) {
+                        await transaction.commit();
+                        return res.status(200).json({
+                            message: "Add to cart successfully"
+                        });
+                    } else {
+                        return res.status(500).json({
+                            error: `Can not add to cart with id: ${order.id}`
+                        });
+                    }
+                }
+            } else {
+                order = await Order.create({ buyerid: buyerid, status: 0 }, { transaction });
+                catalog.orderid = order.id;
+                catalog = await OrderItems.create(catalog, { transaction });
+                if (catalog != null) {
+                    await transaction.commit();
+                    return res.status(200).json({
+                        message: "Add to cart successfully"
+                    });
+                } else {
+                    return res.status(500).json({
+                        error: `Can not add to cart with id: ${order.id}`
+                    });
+                }
+            }
         } else {
             return res.status(500).json({
-                error: `Can not add to cart with id: ${order.id}`
+                error: "Cart not avaiable"
             });
         }
     } catch (error) {
@@ -56,19 +115,25 @@ exports.saveOderItems = async (req, res) => {
     let catalogs = req.body.catalogs;
     try {
         let order = await Order.findOne({ where: { buyerid: buyerid } });
-        catalogs.forEach(async (element) => {
-            try {
-                let item = await OrderItems.findOne({ where: { catalogname: element.catalogname, orderid: order.id } })
-                await OrderItems.update(element, { where: { id: item.id, orderid: order.id } });
-            } catch (error) {
-                return res.status(500).json({
-                    error: error.message
-                });
-            }
-        });
-        return res.status(200).json({
-            message: "Update to cart successfully"
-        });
+        if (order.status == 0) {
+            catalogs.forEach(async (element) => {
+                try {
+                    let item = await OrderItems.findOne({ where: { catalogname: element.catalogname, orderid: order.id } })
+                    await OrderItems.update(element, { where: { id: item.id, orderid: order.id } });
+                } catch (error) {
+                    return res.status(500).json({
+                        error: error.message
+                    });
+                }
+            });
+            return res.status(200).json({
+                message: "Update to cart successfully"
+            });
+        } else {
+            return res.status(500).json({
+                error: "Cart not avaiable"
+            });
+        }
     } catch (error) {
         return res.status(500).json({
             error: error.message
@@ -101,19 +166,25 @@ exports.deleteOnCart = async (req, res) => {
     let transaction = await db.sequelize.transaction();
     try {
         let order = await Order.findOne({ where: { buyerid: buyerid } });
-        let result = await OrderItems.destroy({ where: { catalogid: catalogid, orderid: order.id } }, { transaction })
-        if (result == 1) {
-            await transaction.commit();
-            return res.status(200).json({
-                message: "Delete on cart successfully"
-            });
-        } else {
-            if (transaction) {
-                transaction.rollback();
-                return res.status(500).json({
-                    error: `Can not delete on cart with id: ${catalogid}`
+        if (order.status == 0) {
+            let result = await OrderItems.destroy({ where: { catalogid: catalogid, orderid: order.id } }, { transaction })
+            if (result == 1) {
+                await transaction.commit();
+                return res.status(200).json({
+                    message: "Delete on cart successfully"
                 });
+            } else {
+                if (transaction) {
+                    transaction.rollback();
+                    return res.status(500).json({
+                        error: `Can not delete on cart with id: ${catalogid}`
+                    });
+                }
             }
+        } else {
+            return res.status(500).json({
+                error: "Cart not avaiable"
+            });
         }
     } catch (error) {
         return res.status(500).json({
