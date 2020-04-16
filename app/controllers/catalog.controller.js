@@ -118,7 +118,7 @@ exports.findByCatalogType = async (req, res) => {
         if (catalogtypeid != null) {
             const data = await Catalog.findAll({
                 attributes: ['id', "name", "pictureuri", "price", "description", "catalogtypeid"],
-                offset: parseInt(offset) - 1,
+                offset: (parseInt(offset) - 1) * parseInt(limit),
                 limit: parseInt(limit),
                 where: { catalogtypeid: catalogtypeid }
             });
@@ -207,7 +207,7 @@ exports.findHome = async (req, res) => {
         }
         let highCatalogs = {
             title: "Noi bat",
-            product: mapCatalog(await getListCatalog('price', 'DESC', 1), await getListCatalog('createdAt', 'ASC', 2)),
+            product: mapCatalog(await getListCatalog('price', 'DESC', 1), await getListCatalog('price', 'DESC', 2)),
             mode: -1
         }
         let listCatalog = {
@@ -259,12 +259,12 @@ exports.findMobiles = async (req, res) => {
     try {
         let newCatalogs = {
             title: "San pham moi",
-            products: await getListCatalog('createdAt', 'DESC', 1, 6),
+            products: await getListCatalog('createdAt', 'DESC', 1, 0, 6),
             mode: -1
         }
         let highCatalogs = {
             title: "Noi bat",
-            products: await getListCatalog('price', 'DESC', 1, 6),
+            products: await getListCatalog('price', 'DESC', 1, 0, 6),
             mode: -1
         }
         let listCatalog = {
@@ -290,7 +290,7 @@ exports.seachCatalog = async (req, res) => {
     try {
         let catalogs = await Catalog.findAll({
             attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
-            offset: parseInt(offset) - 1,
+            offset: (parseInt(offset) - 1) * parseInt(limit),
             limit: parseInt(limit),
             where: {
                 name: { [Op.substring]: keyword }
@@ -312,7 +312,7 @@ exports.seachCatalog = async (req, res) => {
 
 //localhost:8080/api/catalog/suggest?keyword=tuandz
 exports.getListName = async (req, res) => {
-    let {keyword} = req.query;
+    let { keyword } = req.query;
     try {
         let result = await Catalog.findAll({
             attributes: ['name'],
@@ -321,6 +321,35 @@ exports.getListName = async (req, res) => {
             }
         });
         return res.status(200).json(castToListName(result));
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+}
+
+//localhost:8080/api/catalog/load?page=home&title=noi-bat&offset=2&limit=6
+exports.getCatalogLoad = async (req, res) => {
+    let { page, title, offset, limit } = req.query;
+    offset = parseInt(offset) - 1;
+    limit = parseInt(limit);
+    try {
+        if (page == "home") {
+            if (title == "san-pham-moi") {
+                let catalogs = mapCatalog(await getListCatalog('createdAt', 'DESC', 1, offset * (limit / 2)), await getListCatalog('createdAt', 'DESC', 2, offset * (limit / 2)));
+                return res.status(200).json(catalogs);
+            } else if (title == "noi-bat") {
+                let catalogs = mapCatalog(await getListCatalog('price', 'DESC', 1, offset * (limit / 2)), await getListCatalog('price', 'DESC', 2, offset * (limit / 2)));
+                return res.status(200).json(catalogs);
+            } else if (title == "mat-hang") {
+                let catalogs = await getListCatalogOffset(offset * limit, limit);
+                return res.status(200).json(catalogs);
+            }
+        } else if (page == "mobile") {
+            return res.status(200).json(await loadCatalog(title, offset, limit, 1));
+        } else if (page == "laptop") {
+            return res.status(200).json(await loadCatalog(title, offset, limit, 2));
+        }
     } catch (error) {
         return res.status(500).json({
             error: error.message
@@ -362,19 +391,19 @@ const mapCatalog = (mobiles, laptops) => {
     return mobiles.concat(laptops);
 }
 
-const getListCatalog = async (name, soft, catalogtypeid, limit = 3) => {
+const getListCatalog = async (name, soft, catalogtypeid, offset = 0, limit = 3) => {
     return await Catalog.findAll({
         attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
-        offset: 0, limit: limit,
+        offset: offset, limit: limit,
         order: [[name, soft]],
         where: { catalogtypeid: catalogtypeid }
     });
 }
 
-const getListCatalogOffset = async (offset) => {
+const getListCatalogOffset = async (offset, limit = 6) => {
     return await Catalog.findAll({
         attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
-        offset: offset, limit: 6
+        offset: offset, limit: limit
     });
 }
 
@@ -384,4 +413,20 @@ const castToListName = (list) => {
         result.push(item.name);
     });
     return result;
+}
+
+const loadCatalog = async (title, offset, limit, catalogtypeid) => {
+    let catalogs = [];
+    if (title == "san-pham-moi") {
+        catalogs = await getListCatalog('createdAt', 'DESC', catalogtypeid, offset * limit, limit);
+    } else if (title == "noi-bat") {
+        catalogs = await getListCatalog('price', 'DESC', catalogtypeid, offset * limit, limit);
+    } else if (title == "mat-hang") {
+        catalogs = await Catalog.findAll({
+            attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
+            offset: offset * limit, limit: limit,
+            where: { catalogtypeid: catalogtypeid }
+        });
+    }
+    return catalogs;
 }

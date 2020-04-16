@@ -3,8 +3,10 @@ const router = express.Router();
 const order = require("../controllers/order.controller");
 const validate = require("../middleware/validateUser");
 
+//localhost:8080/api/order?id=1 lay danh sach catalog in cart
+router.get("/", [validate.validateId], order.getCatalogInCart);
 
-//localhost:8080/api/add them catalog vao gio hang
+//localhost:8080/api/order/add them catalog vao gio hang
 router.post("/add", [validate.validateId], order.addCatalogInCart);
 
 //localhost:8080/api/order them gio hang
