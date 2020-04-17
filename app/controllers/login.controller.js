@@ -39,12 +39,12 @@ exports.register = async (req, res) => {
             let data = await user.setRoles([1], { transaction });
             if (data != null) {
                 await transaction.commit();
-                res.send({ message: "User was registered successfully!" });
+                res.status(200).json(user);
             } else {
-                res.status(500).send({ error: error.message });
+                res.status(500).json({ error: error.message });
             }
         } else {
-            res.status(500).send({ error: error.message });
+            res.status(500).json({ error: error.message });
         }
     } catch (error) {
         if (transaction) {
