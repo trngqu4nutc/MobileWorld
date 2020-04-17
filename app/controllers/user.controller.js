@@ -23,10 +23,8 @@ exports.update = async (req, res) => {
     try {
         let data = await User.update(user, { where: { id: user.id } });
         if(data == 1){
-            res.status(200).json({
-                message: "User was updated successfully!"
-            });
-        }else{
+            res.status(200).json(await User.findByPk(user.id));
+        }else{s
             res.status(500).json({
                 message: `Can not update with username: ${user.username}!`
             });

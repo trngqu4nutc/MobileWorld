@@ -8,11 +8,10 @@ var bcrypt = require("bcryptjs");
 exports.login = async (req, res) => {
     let { username, password } = req.body;
     try {
-        let user = await User.findOne({ attributes: ["id", "username", "password"], where: { username: username } });
-        console.log(user);
+        let user = await User.findOne({ where: { username: username } });
         if (user != null) {
             if (bcrypt.compareSync(password, user.password)) {
-                return res.status(200).json({id: user.id});
+                return res.status(200).json(user);
             }
         }
     } catch (error) {
@@ -57,13 +56,13 @@ exports.register = async (req, res) => {
 exports.loginByFacebook = async (req, res) => {
     let { name, id, email } = req.body;
     try {
-        let user = await User.findOne({ username: name });
+        let user = await User.findOne({ where: { username: id } });
         if (user != null) {
-            res.status(200).json(user.id);
+            res.status(200).json(user);
         } else {
-            user = await User.create({ username: name, password: bcrypt.hashSync(id, 12), email: email });
+            user = await User.create({ username: id, password: bcrypt.hashSync("facebook", 12),status: true, fullname: name, email: email });
             await user.setRoles([1]);
-            return res.status(200).json(user.id);
+            return res.status(200).json(user);
         }
     } catch (error) {
         return res.status(500).json({
