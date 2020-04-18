@@ -23,7 +23,8 @@ exports.update = async (req, res) => {
     try {
         let data = await User.update(user, { where: { id: user.id } });
         if(data == 1){
-            res.status(200).json(await User.findByPk(user.id));
+            user = await User.findByPk(user.id, { attributes: ['id', 'username', 'fullname','email', 'phonenumber', 'address', 'gender'] });
+            res.status(200).json(user);
         }else{s
             res.status(500).json({
                 message: `Can not update with username: ${user.username}!`
