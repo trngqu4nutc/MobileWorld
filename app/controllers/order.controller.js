@@ -32,7 +32,7 @@ exports.getCatalogInCart = async (req, res) => {
 }
 
 exports.addOrder = async (req, res) => {
-    let buyerid = req.body.id;
+    let buyerid = req.headers["id"];
     try {
         let order = await Order.findOne({ where: { buyerid: buyerid } });
         if (order == null) {
@@ -54,14 +54,22 @@ exports.addOrder = async (req, res) => {
 
 exports.addCatalogInCart = async (req, res) => {
     let buyerid = req.headers["id"];
-    let catalog = req.body.catalog;
+    let { catalogid, catalogname,unitprice,unit,pictureuri } = req.body;
     let transaction = await db.sequelize.transaction();
     try {
         let order = await Order.findOne({ where: { buyerid: buyerid } });
         if (order != null) {
+            let catalog = {
+                catalogid: catalogid,
+                catalogname: catalogname,
+                unitprice: unitprice,
+                unit: unit,
+                pictureuri: pictureuri,
+                orderid: order.id
+            }
             if (order.status == 0) {
-                catalog.orderid = order.id;
                 let result = await OrderItems.findOne({ where: { orderid: order.id, catalogid: catalog.catalogid } });
+                console.log(order.id);
                 if (result != null) {
                     return res.status(200).json({
                         error: "Catalog was exists!"
@@ -161,28 +169,31 @@ exports.acceptOrder = async (req, res) => {
 }
 
 exports.deleteOnCart = async (req, res) => {
-    let { buyerid, catalogid } = req.query;
+    let buyerid = req.headers["id"];
+    let {catalogs} = req.body;
     let transaction = await db.sequelize.transaction();
     try {
         let order = await Order.findOne({ where: { buyerid: buyerid } });
         if (order.status == 0) {
-            let result = await OrderItems.destroy({ where: { catalogid: catalogid, orderid: order.id } }, { transaction })
-            if (result == 1) {
+            if(catalogs.length > 0){
+                catalogs.forEach(async catalog => {
+                    await OrderItems.destroy({ where: { catalogid: catalog.id, orderid: order.id } }, { transaction });
+                });
                 await transaction.commit();
                 return res.status(200).json({
                     message: "Delete on cart successfully"
                 });
-            } else {
-                if (transaction) {
-                    transaction.rollback();
-                    return res.status(500).json({
-                        error: `Can not delete on cart with id: ${catalogid}`
-                    });
-                }
+            }else{
+                return res.status(500).json({
+                    error: `Can not delete on cart`
+                });
             }
-        } else {
+        }else {
+            if (transaction) {
+                transaction.rollback();
+            }
             return res.status(500).json({
-                error: "Cart not avaiable"
+                error: `Can not delete on cart`
             });
         }
     } catch (error) {
