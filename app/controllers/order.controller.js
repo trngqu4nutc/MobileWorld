@@ -53,7 +53,7 @@ exports.addOrder = async (req, res) => {
 }
 
 exports.addCatalogInCart = async (req, res) => {
-    let buyerid = req.body.id;
+    let buyerid = req.headers["id"];
     let catalog = req.body.catalog;
     let transaction = await db.sequelize.transaction();
     try {
@@ -62,7 +62,6 @@ exports.addCatalogInCart = async (req, res) => {
             if (order.status == 0) {
                 catalog.orderid = order.id;
                 let result = await OrderItems.findOne({ where: { orderid: order.id, catalogid: catalog.catalogid } });
-                console.log(result);
                 if (result != null) {
                     return res.status(200).json({
                         error: "Catalog was exists!"
@@ -111,7 +110,7 @@ exports.addCatalogInCart = async (req, res) => {
 }
 
 exports.saveOderItems = async (req, res) => {
-    let buyerid = req.body.id;
+    let buyerid = req.headers["id"];
     let catalogs = req.body.catalogs;
     try {
         let order = await Order.findOne({ where: { buyerid: buyerid } });
@@ -142,7 +141,7 @@ exports.saveOderItems = async (req, res) => {
 }
 
 exports.acceptOrder = async (req, res) => {
-    let buyerid = req.body.id;
+    let buyerid = req.headers["id"];
     try {
         let result = await Order.update({ status: 1 }, { where: { buyerid: buyerid } });
         if (result == 1) {
