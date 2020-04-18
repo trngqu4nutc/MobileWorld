@@ -201,22 +201,20 @@ exports.findHome = async (req, res) => {
     //san pham moi, noi bat, mat hang
     try {
         let newCatalogs = {
-            title: "San pham moi",
+            title: "Sản phẩm mới",
             product: mapCatalog(await getListCatalog('createdAt', 'DESC', 1), await getListCatalog('createdAt', 'DESC', 2)),
             mode: -1
         }
         let highCatalogs = {
-            title: "Noi bat",
+            title: "Nổi bật",
             product: mapCatalog(await getListCatalog('price', 'DESC', 1), await getListCatalog('price', 'DESC', 2)),
             mode: -1
         }
         let listCatalog = {
-            title: "Mat Hang",
+            title: "Mặt Hàng",
             product: await getListCatalogOffset(0)
         }
-        res.status(200).json({
-            list: [newCatalogs, highCatalogs, listCatalog]
-        });
+        res.status(200).json([newCatalogs, highCatalogs, listCatalog]);
     } catch (error) {
         return res.status(500).json({
             error: error.message
@@ -228,26 +226,24 @@ exports.findLaptops = async (req, res) => {
     //san pham moi, noi bat, mat hang
     try {
         let newCatalogs = {
-            title: "San pham moi",
+            title: "Sản phẩm mới",
             product: await getListCatalog('createdAt', 'DESC', 2),
             mode: -1
         }
         let highCatalogs = {
-            title: "Noi bat",
+            title: "Nổi bật",
             product: await getListCatalog('price', 'DESC', 2),
             mode: -1
         }
         let listCatalog = {
-            title: "Mat Hang",
+            title: "Mặt Hàng",
             product: await Catalog.findAll({
                 attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
                 offset: 0, limit: 6,
                 where: { catalogtypeid: 2 }
             })
         }
-        res.status(200).json({
-            list: [newCatalogs, highCatalogs, listCatalog]
-        });
+        res.status(200).json([newCatalogs, highCatalogs, listCatalog]);
     } catch (error) {
         return res.status(500).json({
             error: error.message
@@ -258,17 +254,17 @@ exports.findLaptops = async (req, res) => {
 exports.findMobiles = async (req, res) => {
     try {
         let newCatalogs = {
-            title: "San pham moi",
+            title: "Sản phẩm mới",
             products: await getListCatalog('createdAt', 'DESC', 1, 0, 6),
             mode: -1
         }
         let highCatalogs = {
-            title: "Noi bat",
+            title: "Nổi bật",
             products: await getListCatalog('price', 'DESC', 1, 0, 6),
             mode: -1
         }
         let listCatalog = {
-            title: "Mat Hang",
+            title: "Mặt Hàng",
             products: await Catalog.findAll({
                 attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
                 offset: 0, limit: 6,

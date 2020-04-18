@@ -11,7 +11,7 @@ exports.login = async (req, res) => {
         let user = await User.findOne({ where: { username: username } });
         if (user != null) {
             if (bcrypt.compareSync(password, user.password)) {
-                return res.status(200).json(user);
+                return res.status(200).json(castUser(user));
             }
         }
     } catch (error) {
@@ -38,7 +38,7 @@ exports.register = async (req, res) => {
             let data = await user.setRoles([1], { transaction });
             if (data != null) {
                 await transaction.commit();
-                res.status(200).json(user);
+                return res.status(200).json(castUser(user));
             } else {
                 res.status(500).json({ error: error.message });
             }
@@ -58,11 +58,11 @@ exports.loginByFacebook = async (req, res) => {
     try {
         let user = await User.findOne({ where: { username: id } });
         if (user != null) {
-            res.status(200).json(user);
+            return res.status(200).json(castUser(user));
         } else {
-            user = await User.create({ username: id, password: bcrypt.hashSync("facebook", 12),status: true, fullname: name, email: email });
+            user = await User.create({ username: id, password: bcrypt.hashSync("facebook", 12),status: true, fullname: name, email: email, gender: 0 });
             await user.setRoles([1]);
-            return res.status(200).json(user);
+            return res.status(200).json(castUser(user));
         }
     } catch (error) {
         return res.status(500).json({
@@ -70,3 +70,15 @@ exports.loginByFacebook = async (req, res) => {
         });
     }
 };
+
+const castUser = (user) => {
+    return {
+        id: user.id,
+        username: user.username,
+        fullname: user.fullname,
+        email: user.email,
+        address: user.address,
+        phonenumber: user.phonenumber,
+        gender: user.gender
+    }
+}
