@@ -170,7 +170,8 @@ exports.acceptOrder = async (req, res) => {
 
 exports.deleteOnCart = async (req, res) => {
     let buyerid = req.headers["id"];
-    let {catalogs} = req.body;
+    let catalogs = req.body;
+    console.log(catalogs);
     let transaction = await db.sequelize.transaction();
     try {
         let order = await Order.findOne({ where: { buyerid: buyerid } });
@@ -184,13 +185,14 @@ exports.deleteOnCart = async (req, res) => {
                     message: "Delete on cart successfully"
                 });
             }else{
+                await transaction.rollback();
                 return res.status(500).json({
                     error: `Can not delete on cart`
                 });
             }
         }else {
             if (transaction) {
-                transaction.rollback();
+                await transaction.rollback();
             }
             return res.status(500).json({
                 error: `Can not delete on cart`
