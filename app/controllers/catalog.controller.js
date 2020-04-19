@@ -255,17 +255,17 @@ exports.findMobiles = async (req, res) => {
     try {
         let newCatalogs = {
             title: "Sản phẩm mới",
-            products: await getListCatalog('createdAt', 'DESC', 1, 0, 6),
+            product: await getListCatalog('createdAt', 'DESC', 1, 0, 6),
             mode: -1
         }
         let highCatalogs = {
             title: "Nổi bật",
-            products: await getListCatalog('price', 'DESC', 1, 0, 6),
+            product: await getListCatalog('price', 'DESC', 1, 0, 6),
             mode: -1
         }
         let listCatalog = {
             title: "Mặt Hàng",
-            products: await Catalog.findAll({
+            product: await Catalog.findAll({
                 attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
                 offset: 0, limit: 6,
                 where: { catalogtypeid: 1 }
