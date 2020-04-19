@@ -119,23 +119,22 @@ exports.addCatalogInCart = async (req, res) => {
 
 exports.saveOderItems = async (req, res) => {
     let buyerid = req.headers["id"];
-    let catalogs = req.body.catalogs;
+    let { catalogid,unitprice,unit } = req.body;
     try {
         let order = await Order.findOne({ where: { buyerid: buyerid } });
         if (order.status == 0) {
-            catalogs.forEach(async (element) => {
-                try {
-                    let item = await OrderItems.findOne({ where: { catalogname: element.catalogname, orderid: order.id } })
-                    await OrderItems.update(element, { where: { id: item.id, orderid: order.id } });
-                } catch (error) {
-                    return res.status(500).json({
-                        error: error.message
-                    });
-                }
-            });
-            return res.status(200).json({
-                message: "Update to cart successfully"
-            });
+            console.log(order.status);
+            let result = await OrderItems.update({ unitprice: unitprice, unit: unit }, { where: { catalogid: catalogid, orderid: order.id } });
+            console.log(result);
+            if(result == 1){
+                return res.status(200).json({
+                    message: "Update to cart successfully"
+                });
+            }else{
+                return res.status(500).json({
+                    error: "Cart not avaiable"
+                });
+            }
         } else {
             return res.status(500).json({
                 error: "Cart not avaiable"
@@ -178,7 +177,7 @@ exports.deleteOnCart = async (req, res) => {
         if (order.status == 0) {
             if(catalogs.length > 0){
                 catalogs.forEach(async catalog => {
-                    await OrderItems.destroy({ where: { catalogid: catalog.id, orderid: order.id } }, { transaction });
+                    await OrderItems.destroy({ where: { catalogid: catalog.catalogid, orderid: order.id } }, { transaction });
                 });
                 await transaction.commit();
                 return res.status(200).json({
