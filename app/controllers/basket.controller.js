@@ -1,6 +1,7 @@
 const db = require("../models/index");
 const Basket = db.basket;
 const Bill = db.bill;
+const Catalog = db.catalog;
 
 // add/update
 exports.addCatalogInCart = async (req, res) => {
@@ -59,9 +60,45 @@ exports.saveBill = async (req, res) => {
 
 exports.acceptBasket = async (req, res) => {
     let buyerid = req.headers["id"];
+    let catalogids = req.body;
+    let transaction;
     try {
-
+        transaction = await db.sequelize.transaction();
+        let catalog = {};
+        let basket = {};
+        if (catalogids.length > 0) {
+            for (let i = 0; i < catalogids.length; i++) {
+                catalog = await Catalog.findByPk(
+                    catalogids[i],
+                    { attributes: ['id', 'name', 'pictureuri', 'price'] });
+                basket = await Basket.findOne({
+                    attributes: ['unit'],
+                    where: { catalogid: catalogids[i], buyerid: buyerid }
+                });
+                await Bill.create({
+                    catalogid: catalog.id,
+                    name: catalog.name,
+                    pictureuri: catalog.pictureuri,
+                    unit: basket.unit,
+                    unitprice: basket.unit * catalog.price,
+                    userid: buyerid
+                }, { transaction });
+                await Basket.destroy({ where: { catalogid: catalogids[i], buyerid: buyerid } }, { transaction });
+            }
+            await transaction.commit();
+            return res.status(200).json({
+                message: "Accept on cart successfully"
+            });
+        } else {
+            await transaction.rollback();
+            return res.status(500).json({
+                error: `Can not Accept on cart`
+            });
+        }
     } catch (error) {
+        if (transaction) {
+            await transaction.rollback();
+        }
         return res.status(500).json({
             error: error.message
         });
@@ -71,7 +108,6 @@ exports.acceptBasket = async (req, res) => {
 exports.deleteOnCart = async (req, res) => {
     let buyerid = req.headers["id"];
     let catalogids = req.body;
-    console.log(catalogids.length)
     let transaction;
     try {
         transaction = await db.sequelize.transaction();
