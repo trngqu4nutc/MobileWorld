@@ -18,7 +18,7 @@ router.post("/add", basket.addCatalogInCart);
 //localhost:8080/api/basket/delete
 router.post("/delete", basket.deleteOnCart);
 
-//localhost:8080/api/basket/accept dat hang status=1
-// router.post("/accept", basket.acceptOrder);
+//localhost:8080/api/basket/accept dat hang status=0
+router.post("/accept", basket.acceptBasket);
 
 module.exports = router;
