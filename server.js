@@ -9,7 +9,7 @@ const catalogtypes = require("./app/routes/catalogtypes.route");
 const catalog = require("./app/routes/catalog.route");
 const catalogbrands = require("./app/routes/catalogbrands.route");
 const login = require("./app/routes/login.route");
-const order = require("./app/routes/order.route");
+const basket = require("./app/routes/basket.route");
 
 const app = express();
 
@@ -29,7 +29,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // const Role = db.role;
 // const Catalogtypes = db.catalogtypes;
 // const CatalogBrands = db.catalogbrands;
-// // db.sequelize.sync();
+// db.sequelize.sync();
 // db.sequelize.sync({ force: true }).then(() => {
 //     console.log("Drop and re-sync db.");
 //     initial();
@@ -64,7 +64,7 @@ app.use("/api/catalogbrands", catalogbrands);
 
 app.use("/api/login", login);
 
-app.use("/api/order", order);
+app.use("/api/basket", basket);
 
 const PORT = process.env.PORT || 8080;
 

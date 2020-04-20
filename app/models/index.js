@@ -31,10 +31,8 @@ db.specificationsmobile = require("./specificationsmobile.model")(sequelize, Seq
 db.catalog = require("./catalog.model")(sequelize, Sequelize);
 db.catalogtypes = require("./catalogtypes.model")(sequelize, Sequelize);
 db.catalogbrands = require("./catalogbrands.model")(sequelize, Sequelize);
-db.order = require("./order.model")(sequelize, Sequelize);
-db.orderitems = require("./orderitems.model")(sequelize, Sequelize);
-db.baskets = require("./baskets.model")(sequelize, Sequelize);
-db.basketitems = require("./basketitems.model")(sequelize, Sequelize);
+db.basket = require("./basket.model")(sequelize, Sequelize);
+db.bill = require("./bill.model")(sequelize, Sequelize);
 
 //one to one
 // db.user.hasOne(db.userdetail, {
@@ -80,11 +78,14 @@ db.specificationslaptop.belongsTo(db.catalog, { foreignKey: { name: 'catalogid',
 db.catalog.hasMany(db.specificationsmobile, { foreignKey: { name: 'catalogid', allowNull: false }, sourceKey: 'id' });
 db.specificationsmobile.belongsTo(db.catalog, { foreignKey: { name: 'catalogid', allowNull: false }, targetKey: 'id' });
 
-db.order.hasMany(db.orderitems, { foreignKey: { name: 'orderid', allowNull: false }, sourceKey: 'id' });
-db.orderitems.belongsTo(db.order, { foreignKey: { name: 'orderid', allowNull: false }, targetKey: 'id' });
+db.user.hasMany(db.basket, { foreignKey: { name: 'buyerid', allowNull: false } });
+db.basket.belongsTo(db.user, { foreignKey: { name: 'buyerid', allowNull: false } });
 
-db.baskets.hasMany(db.basketitems, { foreignKey: { name: 'basketid', allowNull: false }, sourceKey: 'id' });
-db.basketitems.belongsTo(db.baskets, { foreignKey: { name: 'basketid', allowNull: false }, targetKey: 'id' });
+db.catalog.hasMany(db.basket, { foreignKey: { name: 'catalogid', allowNull: false } });
+db.basket.belongsTo(db.catalog, { foreignKey: { name: 'catalogid', allowNull: false } });
+
+db.user.hasMany(db.bill, { foreignKey: { name: 'userid', allowNull: false } });
+db.bill.belongsTo(db.user, { foreignKey: { name: 'userid', allowNull: false } });
 
 db.ROLES = ["user", "admin"];
 

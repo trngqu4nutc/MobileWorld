@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-    const OrderItems = sequelize.define("OrderItems", {
+    const Bill = sequelize.define("Bill", {
         unitprice: {
             type: Sequelize.DECIMAL(18, 2)
         },
@@ -13,9 +13,12 @@ module.exports = (sequelize, Sequelize) => {
         pictureuri: {
             type: Sequelize.TEXT
         },
-        catalogname: {
-            type: Sequelize.STRING(50)
+        name: {
+            type: Sequelize.STRING
+        },
+        status: {
+            type: Sequelize.INTEGER
         }
     });
-    return OrderItems;
+    return Bill;
 };
