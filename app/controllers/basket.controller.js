@@ -146,7 +146,7 @@ exports.deleteOnCart = async (req, res) => {
 const checkDuplicateCatalog = async (userid, catalogs) => {
     let result = {};
     for (let i = 0; i < catalogs.length; i++) {
-        result = await Bill.findOne({ where: { catalogid: catalogs[i].id, userid: userid, status: 1 } });
+        result = await Bill.findOne({ where: { catalogid: catalogs[i].id, userid: userid, status: 0 } });
         console.log(result)
         if (result != null) {
             return false;
