@@ -5,14 +5,14 @@ const Catalog = db.catalog;
 
 // add/update
 exports.addCatalogInCart = async (req, res) => {
-    let buyerid = req.headers["id"];
+    let userid = req.body.userid;
     let { catalogid, unit } = req.body;
     let transaction;
     try {
         transaction = await db.sequelize.transaction();
-        let basket = await Basket.findOne({ where: { buyerid: buyerid, catalogid: catalogid } });
+        let basket = await Basket.findOne({ where: { userid: userid, catalogid: catalogid } });
         if (basket == null) {
-            basket = await Basket.create({ buyerid: buyerid, catalogid: catalogid, unit: unit }, { transaction });
+            basket = await Basket.create({ userid: userid, catalogid: catalogid, unit: unit }, { transaction });
             if (basket != null) {
                 await transaction.commit();
                 return res.status(200).json({
@@ -22,7 +22,7 @@ exports.addCatalogInCart = async (req, res) => {
         } else {
             let result = await Basket.update(
                 { unit: (basket.unit + parseInt(unit)) },
-                { where: { buyerid: buyerid, catalogid: catalogid } },
+                { where: { userid: userid, catalogid: catalogid } },
                 { transaction });
             if (result == 1) {
                 await transaction.commit();
@@ -47,7 +47,7 @@ exports.addCatalogInCart = async (req, res) => {
 }
 
 exports.saveBill = async (req, res) => {
-    let buyerid = req.headers["id"];
+    let userid = req.headers["id"];
     let { catalogid, unitprice, unit } = req.body;
     try {
 
@@ -59,36 +59,41 @@ exports.saveBill = async (req, res) => {
 }
 
 exports.acceptBasket = async (req, res) => {
-    let buyerid = req.headers["id"];
-    let catalogids = req.body;
+    let userid = req.headers["id"];
+    let catalogs = req.body;
     let transaction;
     try {
         transaction = await db.sequelize.transaction();
-        let catalog = {};
-        let basket = {};
-        if (catalogids.length > 0) {
-            for (let i = 0; i < catalogids.length; i++) {
-                catalog = await Catalog.findByPk(
-                    catalogids[i],
-                    { attributes: ['id', 'name', 'pictureuri', 'price'] });
-                basket = await Basket.findOne({
-                    attributes: ['unit'],
-                    where: { catalogid: catalogids[i], buyerid: buyerid }
+        if (catalogs.length > 0) {
+            if (await checkDuplicateCatalog(userid, catalogs)) {
+                console.log("ok");
+                for (let i = 0; i < catalogs.length; i++) {
+                    let catalog = await Catalog.findByPk(
+                        catalogs[i].id,
+                        { attributes: ['id', 'name', 'pictureuri', 'price'] });
+                    let basket = await Basket.findOne({
+                        where: { catalogid: catalogs[i].id, userid: parseInt(userid) }
+                    });
+                    await Bill.create({
+                        catalogid: catalog.id,
+                        name: catalog.name,
+                        pictureuri: catalog.pictureuri,
+                        unit: basket.unit,
+                        unitprice: basket.unit * catalog.price,
+                        userid: userid
+                    }, { transaction });
+                    await Basket.destroy({ where: { catalogid: catalogs[i].id, userid: userid } }, { transaction });
+                }
+                await transaction.commit();
+                return res.status(200).json({
+                    message: "Accept on cart successfully"
                 });
-                await Bill.create({
-                    catalogid: catalog.id,
-                    name: catalog.name,
-                    pictureuri: catalog.pictureuri,
-                    unit: basket.unit,
-                    unitprice: basket.unit * catalog.price,
-                    userid: buyerid
-                }, { transaction });
-                await Basket.destroy({ where: { catalogid: catalogids[i], buyerid: buyerid } }, { transaction });
+            } else {
+                await transaction.rollback();
+                return res.status(500).json({
+                    error: `Can not Accept on cart`
+                });
             }
-            await transaction.commit();
-            return res.status(200).json({
-                message: "Accept on cart successfully"
-            });
         } else {
             await transaction.rollback();
             return res.status(500).json({
@@ -106,17 +111,17 @@ exports.acceptBasket = async (req, res) => {
 }
 
 exports.deleteOnCart = async (req, res) => {
-    let buyerid = req.headers["id"];
+    let userid = req.headers["id"];
     let catalogids = req.body;
     let transaction;
     try {
         transaction = await db.sequelize.transaction();
         if (catalogids.length > 0) {
             // catalogids.forEach(async item => {
-            //     await Basket.destroy({ where: { catalogid: item, buyerid: buyerid } }, { transaction });
+            //     await Basket.destroy({ where: { catalogid: item, userid: userid } }, { transaction });
             // });
             for (let i = 0; i < catalogids.length; i++) {
-                await Basket.destroy({ where: { catalogid: catalogids[i], buyerid: buyerid } }, { transaction });
+                await Basket.destroy({ where: { catalogid: catalogids[i], userid: userid } }, { transaction });
             }
             await transaction.commit();
             return res.status(200).json({
@@ -136,4 +141,16 @@ exports.deleteOnCart = async (req, res) => {
             error: error.message
         });
     }
+}
+
+const checkDuplicateCatalog = async (userid, catalogs) => {
+    let result = {};
+    for (let i = 0; i < catalogs.length; i++) {
+        result = await Bill.findOne({ where: { catalogid: catalogs[i].id, userid: userid } });
+        console.log(result)
+        if (result != null) {
+            return false;
+        }
+    }
+    return true;
 }

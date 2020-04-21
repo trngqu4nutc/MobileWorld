@@ -5,7 +5,7 @@ module.exports = (sequelize, Sequelize) => {
             allowNull: false,
             primaryKey: true
         },
-        buyerid: {
+        userid: {
             type: Sequelize.INTEGER,
             allowNull: false,
             primaryKey: true

@@ -78,8 +78,8 @@ db.specificationslaptop.belongsTo(db.catalog, { foreignKey: { name: 'catalogid',
 db.catalog.hasMany(db.specificationsmobile, { foreignKey: { name: 'catalogid', allowNull: false }, sourceKey: 'id' });
 db.specificationsmobile.belongsTo(db.catalog, { foreignKey: { name: 'catalogid', allowNull: false }, targetKey: 'id' });
 
-db.user.hasMany(db.basket, { foreignKey: { name: 'buyerid', allowNull: false } });
-db.basket.belongsTo(db.user, { foreignKey: { name: 'buyerid', allowNull: false } });
+db.user.hasMany(db.basket, { foreignKey: { name: 'userid', allowNull: false } });
+db.basket.belongsTo(db.user, { foreignKey: { name: 'userid', allowNull: false } });
 
 db.catalog.hasMany(db.basket, { foreignKey: { name: 'catalogid', allowNull: false } });
 db.basket.belongsTo(db.catalog, { foreignKey: { name: 'catalogid', allowNull: false } });
