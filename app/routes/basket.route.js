@@ -3,8 +3,8 @@ const router = express.Router();
 const basket = require("../controllers/basket.controller");
 const validate = require("../middleware/validateUser");
 
-// //localhost:8080/api/basket?id=16 lay danh sach catalog in cart
-// router.get("/", basket.getCatalogInCart);
+//localhost:8080/api/basket?userid=16 lay danh sach catalog in cart
+router.get("/", basket.findAll);
 
 //localhost:8080/api/basket/add them/sua catalog vao gio hang
 router.post("/add", basket.addCatalogInCart);

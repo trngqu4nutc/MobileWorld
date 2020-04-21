@@ -3,6 +3,22 @@ const Basket = db.basket;
 const Bill = db.bill;
 const Catalog = db.catalog;
 
+exports.findAll = async (req, res) => {
+    let { userid } = req.query;
+    console.log(userid);
+    try {
+        let data = await Basket.findAll({
+            attributes: [],
+            include:[{ model: Catalog, attributes: ['id', 'name', 'price', 'pictureuri', 'description', 'quantity', ] }],
+            where: { userid: userid } });
+        return res.json(await getListCatalog(data));
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+}
+
 // add/update
 exports.addCatalogInCart = async (req, res) => {
     let userid = req.body.userid;
@@ -153,4 +169,12 @@ const checkDuplicateCatalog = async (userid, catalogs) => {
         }
     }
     return true;
+}
+
+const getListCatalog = async (data) => {
+    let result = [];
+    data.forEach(item => {
+        result.push(item.Catalog);
+    });
+    return result;
 }
