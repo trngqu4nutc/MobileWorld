@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
     const Bill = sequelize.define("Bill", {
-        unitprice: {
+        price: {
             type: Sequelize.DECIMAL(18, 2)
         },
         unit: {
