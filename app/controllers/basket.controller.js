@@ -85,10 +85,10 @@ exports.acceptBasket = async (req, res) => {
                 console.log("ok");
                 for (let i = 0; i < catalogs.length; i++) {
                     let catalog = await Catalog.findByPk(
-                        catalogs[i].id,
+                        catalogs[i],
                         { attributes: ['id', 'name', 'pictureuri', 'price'] });
                     let basket = await Basket.findOne({
-                        where: { catalogid: catalogs[i].id, userid: parseInt(userid) }
+                        where: { catalogid: catalogs[i], userid: parseInt(userid) }
                     });
                     await Bill.create({
                         catalogid: catalog.id,
@@ -98,7 +98,7 @@ exports.acceptBasket = async (req, res) => {
                         unitprice: basket.unit * catalog.price,
                         userid: userid
                     }, { transaction });
-                    await Basket.destroy({ where: { catalogid: catalogs[i].id, userid: userid } }, { transaction });
+                    await Basket.destroy({ where: { catalogid: catalogs[i], userid: userid } }, { transaction });
                 }
                 await transaction.commit();
                 return res.status(200).json({
@@ -174,7 +174,7 @@ exports.getAllBillById = async (req, res) => {
 const checkDuplicateCatalog = async (userid, catalogs) => {
     let result = {};
     for (let i = 0; i < catalogs.length; i++) {
-        result = await Bill.findOne({ where: { catalogid: catalogs[i].id, userid: userid, status: 0 } });
+        result = await Bill.findOne({ where: { catalogid: catalogs[i], userid: userid, status: 0 } });
         console.log(result)
         if (result != null) {
             return false;
