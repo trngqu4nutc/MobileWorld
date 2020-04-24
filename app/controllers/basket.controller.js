@@ -8,7 +8,7 @@ exports.findAll = async (req, res) => {
     console.log(userid);
     try {
         let data = await Basket.findAll({
-            attributes: [],
+            attributes: ['unit'],
             include:[{ model: Catalog, attributes: ['id', 'name', 'price', 'pictureuri', 'description', 'quantity', ] }],
             where: { userid: userid } });
         return res.json(await getListCatalog(data));
@@ -21,7 +21,7 @@ exports.findAll = async (req, res) => {
 
 // add/update
 exports.addCatalogInCart = async (req, res) => {
-    let userid = req.body.userid;
+    let userid = req.headers['id'];
     let { catalogid, unit } = req.body;
     let transaction;
     try {
@@ -186,6 +186,7 @@ const checkDuplicateCatalog = async (userid, catalogs) => {
 const getListCatalog = async (data) => {
     let result = [];
     data.forEach(item => {
+        item.Catalog.dataValues.unit = item.unit;
         result.push(item.Catalog);
     });
     return result;
