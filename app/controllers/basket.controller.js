@@ -159,6 +159,18 @@ exports.deleteOnCart = async (req, res) => {
     }
 }
 
+exports.getAllBillById = async (req, res) => {
+    let {userid} = req.query;
+    try {
+        let data = await Bill.findAll({ where: { userid: userid, status: 0 } });
+        return res.json(data);
+    } catch (error) {
+        return res.status(500).json({
+            error: 'Error'
+        });
+    }
+}
+
 const checkDuplicateCatalog = async (userid, catalogs) => {
     let result = {};
     for (let i = 0; i < catalogs.length; i++) {

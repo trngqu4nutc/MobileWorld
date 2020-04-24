@@ -6,6 +6,9 @@ const validate = require("../middleware/validateUser");
 //localhost:8080/api/basket?userid=16 lay danh sach catalog in cart
 router.get("/", basket.findAll);
 
+//localhost:8080/api/basket/bill?userid=17
+router.get("/bill", basket.getAllBillById)
+
 //localhost:8080/api/basket/add them/sua catalog vao gio hang
 router.post("/add", basket.addCatalogInCart);
 
