@@ -2,6 +2,9 @@ const db = require('../models');
 const User = db.user;
 const Role = db.role;
 
+const nodemailer = require("nodemailer");
+const transport = require("../config/email.config");
+
 const Op = db.Sequelize.Op;
 var bcrypt = require("bcryptjs");
 
@@ -19,7 +22,7 @@ exports.login = async (req, res) => {
             message: error.message
         });
     }
-};
+}
 
 exports.register = async (req, res) => {
     let transaction = await db.sequelize.transaction();
@@ -31,7 +34,7 @@ exports.register = async (req, res) => {
             status: true,
             phonenumber: req.body.phonenumber,
             address: req.body.address,
-            gender: 3,
+            gender: 0,
             password: bcrypt.hashSync(req.body.password, 12)
         }, { transaction });
         if (user != null) {
@@ -39,28 +42,25 @@ exports.register = async (req, res) => {
             if (data != null) {
                 await transaction.commit();
                 return res.status(200).json(castUser(user));
-            } else {
-                res.status(500).json({ error: error.message });
             }
-        } else {
-            res.status(500).json({ error: error.message });
         }
+        res.status(500).json({ error: error.message });
     } catch (error) {
         if (transaction) {
             await transaction.rollback();
             res.status(500).send({ error: error.message });
         }
     }
-};
+}
 
 exports.loginByFacebook = async (req, res) => {
     let { name, id, email } = req.body;
     try {
-        let user = await User.findOne({ where: { username: id } });
+        let user = await User.findOne({ where: { username: "" + id } });
         if (user != null) {
             return res.status(200).json(castUser(user));
         } else {
-            user = await User.create({ username: id, password: bcrypt.hashSync("facebook", 12),status: true, fullname: name, email: email, gender: 0 });
+            user = await User.create({ username: "" + id, password: bcrypt.hashSync("facebook", 12), status: true, fullname: name, email: email, gender: 0 });
             await user.setRoles([1]);
             return res.status(200).json(castUser(user));
         }
@@ -69,7 +69,51 @@ exports.loginByFacebook = async (req, res) => {
             error: error.message
         });
     }
-};
+}
+
+exports.forGotPassword = async (req, res) => {
+    let { email, username } = req.body;
+    const transporter = nodemailer.createTransport({
+        service: transport.service,
+        auth: {
+            user: transport.auth.user,
+            pass: transport.auth.pass
+        }
+    });
+    const mailOptions = {
+        from: transport.auth.user,
+        to: email,
+        subject: "Your password has been changed by us.",
+        text: ""
+    }
+    try {
+        let data = await User.findOne({ where: { username: username, email: email } });
+        if (data != null) {
+            let password = makePassword();
+            let check = await User.update(
+                { password: bcrypt.hashSync(password, 12) },
+                { where: { username: username } }
+            );
+            if (check == 1) {
+                mailOptions.text = "Password: " + password;
+                let infor = await transporter.sendMail(mailOptions);
+                if(infor != null){
+                    console.log(infor);
+                    return res.status(200).json({
+                        message: "Please check new password in your email!"
+                    });
+                }
+            }
+        }
+        return res.status(500).json({
+            error: "Không thể tiến hành xác thực."
+        });
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+}
 
 const castUser = (user) => {
     return {
@@ -81,4 +125,12 @@ const castUser = (user) => {
         phonenumber: user.phonenumber,
         gender: user.gender
     }
+}
+
+const makePassword = () => {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (var i = 0; i < 10; i++)
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    return text;
 }

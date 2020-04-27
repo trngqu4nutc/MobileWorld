@@ -12,4 +12,7 @@ router.post("/loginfacebook", login.loginByFacebook);
 //dang ki
 router.post("/register", [verifySignUp.checkDuplicateUsername], login.register);
 
+//localhost:8080/api/login/forgot
+router.post("/forgot", login.forGotPassword);
+
 module.exports = router;
