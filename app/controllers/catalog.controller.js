@@ -20,20 +20,33 @@ exports.save = async (req, res) => {
         transaction = await db.sequelize.transaction();
         let data;
         if (catalog.id) {
-            data.catalog = await Catalog.update(catalog, { where: { id: catalog.id } });
-            if (data == 1) {
-                res.json({
-                    message: "Product was update successfully!"
-                });
+            await Catalog.update(catalog, { where: { id: catalog.id } }, { transaction });
+            await Specifications.update(
+                specifications,
+                { where: { catalogid: catalog.id } },
+                { transaction }
+            );
+            if (catalog.catalogtypeid == 1) {
+                await Specificationsmobile.update(
+                    specificationsProduct,
+                    { where: { catalogid: catalog.id } },
+                    { transaction }
+                );
             } else {
-                res.json({
-                    message: `Cannot update with id=${catalog.id}!`
-                });
+                await Specificationslaptop.update(
+                    specificationsProduct,
+                    { where: { catalogid: catalog.id } },
+                    { transaction }
+                );
             }
+            await transaction.commit();
+            return res.json({
+                message: "Product was update successfully!"
+            });
         } else {
             let catalogs = await Catalog.findAll({ where: { name: catalog.name } });
             if (catalogs.length >= 1) {
-                res.json({
+                return res.json({
                     message: "Product was exists!"
                 });
             } else {
@@ -46,32 +59,30 @@ exports.save = async (req, res) => {
                             specificationsProduct.catalogid = parseInt(data.id);
                             data.specificationsProduct = await Specificationsmobile.create(specificationsProduct, { transaction });
                             await transaction.commit();
-                            res.json({
+                            return res.json({
                                 catalog: data,
                                 specifications: data.specifications,
                                 specificationsmobile: data.specificationsProduct
                             });
-                            return;
                         } else if (catalog.catalogtypeid === 2 && specificationsProduct != null) {
                             specificationsProduct.catalogid = parseInt(data.id);
                             data.specificationsProduct = await Specificationslaptop.create(specificationsProduct, { transaction });
                             await transaction.commit();
-                            res.json({
+                            return res.json({
                                 catalog: data,
                                 specifications: data.specifications,
                                 specificationslaptop: data.specificationsProduct
                             });
-                            return;
                         } else {
                             await transaction.commit();
-                            res.json({
+                            return res.json({
                                 catalog: data,
                                 specifications: data.specifications
                             });
                         }
                     } else {
                         await transaction.commit();
-                        res.json({
+                        return res.json({
                             catalog: data
                         });
                     }
