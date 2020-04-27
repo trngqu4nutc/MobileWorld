@@ -102,20 +102,30 @@ exports.save = async (req, res) => {
 
 exports.delete = async (req, res) => {
     let id = req.params.id;
+    let transaction;
     try {
-
-        let data = await Catalog.destroy({ where: { id: id } });
-        if (data === 1) {
-            res.json({
+        transaction = await db.sequelize.transaction();
+        let data = await Catalog.findByPk(id);
+        if (data == null) {
+            if(data.catalogtypeid == 1){
+                await Specificationsmobile.destroy({ where: { catalogtypeid: data.catalogtypeid } });
+            }else{
+                await Specificationslaptop.destroy({ where: { catalogtypeid: data.catalogtypeid } });
+            }
+            await Specifications.destroy({ where: { catalogtypeid: data.catalogtypeid } });
+            await Catalog.destroy({ where: { id: id } });
+            return res.json({
                 message: "Product was deleted successfully!"
             });
-        } else {
-            res.json({
-                message: `Cannot delete Tutorial with id=${id}!`
-            });
         }
+        return res.status(500).json({
+            message: "Could not delete Product with id=" + id
+        });
     } catch (error) {
-        res.status(500).json({
+        if (transaction) {
+            await transaction.rollback();
+        }
+        return res.status(500).json({
             message: "Could not delete Product with id=" + id
         });
     }
