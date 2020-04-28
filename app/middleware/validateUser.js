@@ -2,7 +2,7 @@ const db = require("../models");
 const User = db.user;
 
 validateId = async (req, res, next) => {
-    let {id} = req.body;
+    let id = req.headers["id"];
     try {
         let result = await User.findByPk(id);
         if(result != null){
