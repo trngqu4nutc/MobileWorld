@@ -10,7 +10,7 @@ router.get("/", basket.findAll);
 router.get("/bill", basket.getAllBillById)
 
 //localhost:8080/api/basket/add them/sua catalog vao gio hang
-router.post("/add", basket.addCatalogInCart);
+router.post("/add", [validate.validateId], basket.addCatalogInCart);
 
 // //localhost:8080/api/basket them gio hang
 // router.post("/", basket.addOrder);
@@ -19,9 +19,9 @@ router.post("/add", basket.addCatalogInCart);
 // router.put("/", basket.saveOderItems);
 
 //localhost:8080/api/basket/delete
-router.post("/delete", basket.deleteOnCart);
+router.post("/delete", [validate.validateId], basket.deleteOnCart);
 
 //localhost:8080/api/basket/accept dat hang status = 0
-router.post("/accept", basket.acceptBasket);
+router.post("/accept", [validate.validateId], basket.acceptBasket);
 
 module.exports = router;
