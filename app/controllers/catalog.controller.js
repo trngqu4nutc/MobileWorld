@@ -108,12 +108,12 @@ exports.delete = async (req, res) => {
         let data = await Catalog.findByPk(id);
         if (data == null) {
             if(data.catalogtypeid == 1){
-                await Specificationsmobile.destroy({ where: { catalogtypeid: data.catalogtypeid } });
+                await Specificationsmobile.destroy({ where: { catalogtypeid: data.catalogtypeid } }, { transaction });
             }else{
-                await Specificationslaptop.destroy({ where: { catalogtypeid: data.catalogtypeid } });
+                await Specificationslaptop.destroy({ where: { catalogtypeid: data.catalogtypeid } }, { transaction });
             }
-            await Specifications.destroy({ where: { catalogtypeid: data.catalogtypeid } });
-            await Catalog.destroy({ where: { id: id } });
+            await Specifications.destroy({ where: { catalogtypeid: data.catalogtypeid } }, { transaction });
+            await Catalog.destroy({ where: { id: id } }, { transaction });
             return res.json({
                 message: "Product was deleted successfully!"
             });
