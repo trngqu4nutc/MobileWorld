@@ -3,9 +3,9 @@ const Bill = db.bill;
 
 
 exports.getAllBillById = async (req, res) => {
-    let { userid } = req.query;
+    let { userid, type } = req.query;
     try {
-        let data = await Bill.findAll({ where: { userid: userid } });
+        let data = await Bill.findAll({ where: { userid: userid, status: type } });
         return res.json(data);
     } catch (error) {
         return res.status(500).json({
