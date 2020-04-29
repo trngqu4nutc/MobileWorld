@@ -95,7 +95,7 @@ exports.acceptBasket = async (req, res) => {
                         name: catalog.name,
                         pictureuri: catalog.pictureuri,
                         unit: basket.unit,
-                        price: basket.unit * catalog.price,
+                        price: catalog.price,
                         userid: userid
                     }, { transaction });
                     await Basket.destroy({ where: { catalogid: catalogs[i], userid: userid } }, { transaction });
