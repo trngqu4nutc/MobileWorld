@@ -10,6 +10,7 @@ const catalog = require("./app/routes/catalog.route");
 const catalogbrands = require("./app/routes/catalogbrands.route");
 const login = require("./app/routes/login.route");
 const basket = require("./app/routes/basket.route");
+const bill = require("./app/routes/bill.route");
 
 const app = express();
 
@@ -65,6 +66,8 @@ app.use("/api/catalogbrands", catalogbrands);
 app.use("/api/login", login);
 
 app.use("/api/basket", basket);
+
+app.use("/api/bill", bill);
 
 const PORT = process.env.PORT || 8080;
 

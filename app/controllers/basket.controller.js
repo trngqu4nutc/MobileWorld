@@ -95,7 +95,7 @@ exports.acceptBasket = async (req, res) => {
                         name: catalog.name,
                         pictureuri: catalog.pictureuri,
                         unit: basket.unit,
-                        unitprice: basket.unit * catalog.price,
+                        price: basket.unit * catalog.price,
                         userid: userid
                     }, { transaction });
                     await Basket.destroy({ where: { catalogid: catalogs[i], userid: userid } }, { transaction });
@@ -155,18 +155,6 @@ exports.deleteOnCart = async (req, res) => {
         }
         return res.status(500).json({
             error: error.message
-        });
-    }
-}
-
-exports.getAllBillById = async (req, res) => {
-    let {userid} = req.query;
-    try {
-        let data = await Bill.findAll({ where: { userid: userid, status: 0 } });
-        return res.json(data);
-    } catch (error) {
-        return res.status(500).json({
-            error: 'Error'
         });
     }
 }
