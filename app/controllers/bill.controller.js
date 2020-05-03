@@ -14,6 +14,7 @@ exports.getAllBillById = async (req, res) => {
     }
 }
 
+//user check
 exports.updateCatalog = async (req, res) => {
     let id = req.body.idbill;
     let status = req.body.status;
@@ -38,6 +39,7 @@ exports.updateCatalog = async (req, res) => {
     }
 }
 
+//admin check
 exports.comfirmOrder = async (req, res) => {
     let id = req.body.idbill;
     try {

@@ -19,4 +19,7 @@ router.get("/admin",
 //update user
 router.put("/user", controller.update);
 
+//change password
+router.put("/user/password", controller.changePassword);
+
 module.exports = router;
