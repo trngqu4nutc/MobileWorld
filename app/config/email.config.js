@@ -1,7 +1,7 @@
 module.exports = {
     service: 'gmail',
     auth: {
-        user: 'lequan1234123412341234@gmail.com',
-        pass: 'quan12341234'
+        user: 'MobileWorld.oscar@gmail.com',
+        pass: 'Oadmin007'
     }
 }

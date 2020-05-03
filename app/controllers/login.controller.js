@@ -41,6 +41,13 @@ exports.register = async (req, res) => {
             let data = await user.setRoles([1], { transaction });
             if (data != null) {
                 await transaction.commit();
+                const mailOptions = {
+                    from: transport.auth.user,
+                    to: req.body.email,
+                    subject: "Chào mừng bạn đến với MobileWorld!",
+                    text: `Bạn đã đăng ký tài khoản ${req.body.username} thành công!`
+                }
+                await transporter.sendMail(mailOptions);
                 return res.status(200).json(castUser(user));
             }
         }
@@ -73,13 +80,6 @@ exports.loginByFacebook = async (req, res) => {
 
 exports.forGotPassword = async (req, res) => {
     let { email, username } = req.body;
-    const transporter = nodemailer.createTransport({
-        service: transport.service,
-        auth: {
-            user: transport.auth.user,
-            pass: transport.auth.pass
-        }
-    });
     const mailOptions = {
         from: transport.auth.user,
         to: email,
@@ -114,6 +114,14 @@ exports.forGotPassword = async (req, res) => {
         });
     }
 }
+
+const transporter = nodemailer.createTransport({
+    service: transport.service,
+    auth: {
+        user: transport.auth.user,
+        pass: transport.auth.pass
+    }
+});
 
 const castUser = (user) => {
     return {
