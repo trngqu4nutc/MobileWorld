@@ -4,15 +4,15 @@ var bcrypt = require("bcryptjs");
 
 exports.allAccess = (req, res) => {
     res.status(200).send("Public Content.");
-};
+}
 
 exports.userBoard = (req, res) => {
     res.status(200).send("User Content.");
-};
+}
 
 exports.adminBoard = (req, res) => {
     res.status(200).send("Admin Content.");
-};
+}
 
 exports.update = async (req, res) => {
     let user = req.body;
@@ -35,7 +35,7 @@ exports.update = async (req, res) => {
             message: error.message
         });
     }
-};
+}
 
 exports.findUserById = async (req, res) => {
     let {id} = req.params;
@@ -48,6 +48,26 @@ exports.findUserById = async (req, res) => {
                 message: `Can not find with id: ${id}!`
             });
         }
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+}
+
+exports.changePassword = async (req, res) => {
+    let { id, oldpassword, newpassword } = req.body;
+    try {
+        var user = await User.findByPk(id);
+        if(bcrypt.compareSync(oldpassword, user.password)){
+            await User.update({ password: bcrypt.hashSync(newpassword, 12) }, { where: { id: id } });
+            return res.status(200).json({
+                message: "Thay đổi mật khẩu thành công!"
+            });
+        }
+        return res.status(200).json({
+            error: "Mật khẩu không hợp lệ!"
+        });
     } catch (error) {
         return res.status(500).json({
             error: error.message
