@@ -2,6 +2,9 @@ const db = require("../models");
 const User = db.user;
 var bcrypt = require("bcryptjs");
 
+const nodemailer = require("nodemailer");
+const transport = require("../config/email.config");
+
 exports.allAccess = (req, res) => {
     res.status(200).send("Public Content.");
 }
@@ -61,6 +64,18 @@ exports.changePassword = async (req, res) => {
         var user = await User.findByPk(id);
         if(bcrypt.compareSync(oldpassword, user.password)){
             await User.update({ password: bcrypt.hashSync(newpassword, 12) }, { where: { id: id } });
+            let afterUser = await User.findByPk(id);
+            let content = `<p style="color: black;">Tài khoản <b>${afterUser.username}</b> đã được thay đổi mật khẩu vào lúc ${afterUser.updatedAt}.</p>`;
+            content += `<p style="color: black;">Hãy chắc chắn rằng đó là bạn và liên hệ tới hòm thư ${transport.auth.user} để biết thêm thông tin chi tiết.</p>`
+            console.log(content);
+            const mailOptions = {
+                from: transport.auth.user,
+                to: afterUser.email,
+                subject: "Xác thực thay đổi mật khẩu!",
+                html: content
+            }
+            // transporter.
+            await transporter.sendMail(mailOptions);
             return res.status(200).json({
                 message: "Thay đổi mật khẩu thành công!"
             });
@@ -74,3 +89,11 @@ exports.changePassword = async (req, res) => {
         });
     }
 }
+
+const transporter = nodemailer.createTransport({
+    service: transport.service,
+    auth: {
+        user: transport.auth.user,
+        pass: transport.auth.pass
+    }
+});
