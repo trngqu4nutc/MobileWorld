@@ -28,6 +28,7 @@ db.role = require("./role.model")(sequelize, Sequelize);
 db.specifications = require("./specifications.model")(sequelize, Sequelize);
 db.specificationslaptop = require("./specificationslaptop.model")(sequelize, Sequelize);
 db.specificationsmobile = require("./specificationsmobile.model")(sequelize, Sequelize);
+db.history = require("./history.model")(sequelize, Sequelize);
 db.catalog = require("./catalog.model")(sequelize, Sequelize);
 db.catalogtypes = require("./catalogtypes.model")(sequelize, Sequelize);
 db.catalogbrands = require("./catalogbrands.model")(sequelize, Sequelize);
@@ -77,6 +78,9 @@ db.specificationslaptop.belongsTo(db.catalog, { foreignKey: { name: 'catalogid',
 
 db.catalog.hasMany(db.specificationsmobile, { foreignKey: { name: 'catalogid', allowNull: false }, sourceKey: 'id' });
 db.specificationsmobile.belongsTo(db.catalog, { foreignKey: { name: 'catalogid', allowNull: false }, targetKey: 'id' });
+
+db.catalog.hasMany(db.history, { foreignKey: { name: 'catalogid', allowNull: false }, sourceKey: 'id' });
+db.history.belongsTo(db.catalog, { foreignKey: { name: 'catalogid', allowNull: false }, targetKey: 'id' });
 
 db.user.hasMany(db.basket, { foreignKey: { name: 'userid', allowNull: false } });
 db.basket.belongsTo(db.user, { foreignKey: { name: 'userid', allowNull: false } });

@@ -1,5 +1,6 @@
 const authJwt = require("../middleware/authJwt");
 const controller = require("../controllers/user.controller");
+const upload = require("../util/uploadImage");
 
 const express = require("express");
 const router = express.Router();
@@ -18,6 +19,9 @@ router.get("/admin",
 
 //update user
 router.put("/user", controller.update);
+
+//update image
+router.put("/user/image", upload.single("file"), controller.updateAvatar);
 
 //change password
 router.put("/user/password", controller.changePassword);

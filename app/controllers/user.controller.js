@@ -40,6 +40,20 @@ exports.update = async (req, res) => {
     }
 }
 
+exports.updateAvatar = async (req, res) => {
+    try {
+        let path = req.file.path.split('\\')[2];
+        await User.update({ avatar: path }, { where: { id: req.headers["id"] } });
+        return res.status(200).json({
+            message: "Thay đổi ảnh đại diện thành công!"
+        });
+    } catch (error) {
+        return res.status(200).json({
+            error: "Có lỗi xảy ra!"
+        });
+    }
+}
+
 exports.findUserById = async (req, res) => {
     let {id} = req.params;
     try {

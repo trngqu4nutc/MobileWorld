@@ -32,6 +32,9 @@ module.exports = (sequelize, Sequelize) => {
         },
         gender: {
             type: Sequelize.INTEGER
+        },
+        avatar: {
+            type: Sequelize.STRING
         }
     });
     return User;
