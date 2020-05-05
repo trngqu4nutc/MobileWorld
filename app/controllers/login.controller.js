@@ -61,13 +61,13 @@ exports.register = async (req, res) => {
 }
 
 exports.loginByFacebook = async (req, res) => {
-    let { fullname, id, email } = req.body;
+    let { name, id, email } = req.body;
     try {
         let user = await User.findOne({ where: { username: "" + id } });
         if (user != null) {
             return res.status(200).json(castUser(user));
         } else {
-            user = await User.create({ username: "" + id, password: bcrypt.hashSync("facebook", 12), status: true, fullname: fullname, email: email, gender: 0 });
+            user = await User.create({ username: "" + id, password: bcrypt.hashSync("facebook", 12), status: true, fullname: name, email: email, gender: 0 });
             await user.setRoles([1]);
             return res.status(200).json(castUser(user));
         }
