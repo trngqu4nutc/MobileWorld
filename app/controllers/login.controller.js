@@ -51,7 +51,7 @@ exports.register = async (req, res) => {
                 return res.status(200).json(castUser(user));
             }
         }
-        res.status(500).json({ error: error.message });
+        res.status(200).json({ error: error.message });
     } catch (error) {
         if (transaction) {
             await transaction.rollback();
@@ -61,13 +61,13 @@ exports.register = async (req, res) => {
 }
 
 exports.loginByFacebook = async (req, res) => {
-    let { name, id, email } = req.body;
+    let { fullname, id, email } = req.body;
     try {
         let user = await User.findOne({ where: { username: "" + id } });
         if (user != null) {
             return res.status(200).json(castUser(user));
         } else {
-            user = await User.create({ username: "" + id, password: bcrypt.hashSync("facebook", 12), status: true, fullname: name, email: email, gender: 0 });
+            user = await User.create({ username: "" + id, password: bcrypt.hashSync("facebook", 12), status: true, fullname: fullname, email: email, gender: 0 });
             await user.setRoles([1]);
             return res.status(200).json(castUser(user));
         }
@@ -83,7 +83,7 @@ exports.forGotPassword = async (req, res) => {
     const mailOptions = {
         from: transport.auth.user,
         to: email,
-        subject: "Your password has been changed by us.",
+        subject: "Your password has been changed.",
         text: ""
     }
     try {

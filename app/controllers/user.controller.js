@@ -29,7 +29,7 @@ exports.update = async (req, res) => {
             user = await User.findByPk(user.id, { attributes: ['id', 'username', 'fullname','email', 'phonenumber', 'address', 'gender'] });
             res.status(200).json(user);
         }else{s
-            res.status(500).json({
+            res.status(200).json({
                 message: `Can not update with username: ${user.username}!`
             });
         }
@@ -47,7 +47,7 @@ exports.findUserById = async (req, res) => {
         if(user != null){
             return res.status(200).json(user);
         }else{
-            return res.status(500).json({
+            return res.status(200).json({
                 message: `Can not find with id: ${id}!`
             });
         }
@@ -66,8 +66,7 @@ exports.changePassword = async (req, res) => {
             await User.update({ password: bcrypt.hashSync(newpassword, 12) }, { where: { id: id } });
             let afterUser = await User.findByPk(id);
             let content = `<p style="color: black;">Tài khoản <b>${afterUser.username}</b> đã được thay đổi mật khẩu vào lúc ${afterUser.updatedAt}.</p>`;
-            content += `<p style="color: black;">Hãy chắc chắn rằng đó là bạn và liên hệ tới hòm thư ${transport.auth.user} để biết thêm thông tin chi tiết.</p>`
-            console.log(content);
+            content += `<p style="color: black;">Hãy chắc chắn rằng đó là bạn và liên hệ tới hòm thư ${transport.auth.user} để biết thêm thông tin chi tiết.</p>`;
             const mailOptions = {
                 from: transport.auth.user,
                 to: afterUser.email,
