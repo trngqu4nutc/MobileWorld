@@ -89,6 +89,25 @@ exports.changePassword = async (req, res) => {
     }
 }
 
+exports.uploadAvatar = async (req, res) => {
+    try {
+        let path = req.file.path.split('\\')[2];
+        if (path.length > 0) {
+            await User.update({ avatar: path }, { where: { id: req.headers["id"] } });
+            return res.status(200).json({
+                message: "Thay đổi ảnh đại diện thành công!"
+            });
+        }
+        return res.status(200).json({
+            error: "Có lỗi xảy ra!"
+        });
+    } catch (error) {
+        return res.status(200).json({
+            error: error.message
+        });
+    }
+}
+
 const transporter = nodemailer.createTransport({
     service: transport.service,
     auth: {
