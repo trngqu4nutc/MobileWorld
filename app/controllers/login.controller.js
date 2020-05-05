@@ -17,9 +17,12 @@ exports.login = async (req, res) => {
                 return res.status(200).json(castUser(user));
             }
         }
+        return res.status(200).json({
+            error: "Không thể đăng nhập!"
+        });
     } catch (error) {
         return res.status(500).json({
-            message: error.message
+            error: error.message
         });
     }
 }
@@ -61,13 +64,17 @@ exports.register = async (req, res) => {
 }
 
 exports.loginByFacebook = async (req, res) => {
-    let { name, id, email } = req.body;
+    let { fullname, id, email } = req.body;
     try {
         let user = await User.findOne({ where: { username: "" + id } });
         if (user != null) {
             return res.status(200).json(castUser(user));
         } else {
-            user = await User.create({ username: "" + id, password: bcrypt.hashSync("facebook", 12), status: true, fullname: name, email: email, gender: 0 });
+            user = await User.create({
+                username: "" + id,
+                password: bcrypt.hashSync("facebook", 12), status: true,
+                fullname: fullname, email: email, gender: 0
+            });
             await user.setRoles([1]);
             return res.status(200).json(castUser(user));
         }
@@ -97,7 +104,7 @@ exports.forGotPassword = async (req, res) => {
             if (check == 1) {
                 mailOptions.text = "Password: " + password;
                 let infor = await transporter.sendMail(mailOptions);
-                if(infor != null){
+                if (infor != null) {
                     console.log(infor);
                     return res.status(200).json({
                         message: "Please check new password in your email!"
