@@ -9,8 +9,9 @@ exports.findAll = async (req, res) => {
     try {
         let data = await Basket.findAll({
             attributes: ['unit'],
-            include:[{ model: Catalog, attributes: ['id', 'name', 'price', 'pictureuri', 'description', 'quantity', ] }],
-            where: { userid: userid } });
+            include: [{ model: Catalog, attributes: ['id', 'name', 'price', 'pictureuri', 'description', 'quantity',] }],
+            where: { userid: userid }
+        });
         return res.json(await getListCatalog(data));
     } catch (error) {
         return res.status(500).json({
@@ -76,19 +77,19 @@ exports.saveBill = async (req, res) => {
 
 exports.acceptBasket = async (req, res) => {
     let userid = req.headers["id"];
-    let catalogs = req.body;
+    let { idorders, shiptoaddress } = req.body;
     let transaction;
     try {
         transaction = await db.sequelize.transaction();
-        if (catalogs.length > 0) {
-            if (await checkDuplicateCatalog(userid, catalogs)) {
+        if (idorders.length > 0) {
+            if (await checkDuplicateCatalog(userid, idorders)) {
                 console.log("ok");
-                for (let i = 0; i < catalogs.length; i++) {
+                for (let i = 0; i < idorders.length; i++) {
                     let catalog = await Catalog.findByPk(
-                        catalogs[i],
+                        idorders[i],
                         { attributes: ['id', 'name', 'pictureuri', 'price', 'quantity'] });
                     let basket = await Basket.findOne({
-                        where: { catalogid: catalogs[i], userid: parseInt(userid) }
+                        where: { catalogid: idorders[i], userid: parseInt(userid) }
                     });
                     await Catalog.update(
                         { quantity: catalog.quantity - parseInt(basket.unit) },
@@ -99,9 +100,10 @@ exports.acceptBasket = async (req, res) => {
                         pictureuri: catalog.pictureuri,
                         unit: basket.unit,
                         price: catalog.price,
-                        userid: userid
+                        userid: userid,
+                        shiptoaddress: shiptoaddress
                     }, { transaction });
-                    await Basket.destroy({ where: { catalogid: catalogs[i], userid: userid } }, { transaction });
+                    await Basket.destroy({ where: { catalogid: idorders[i], userid: userid } }, { transaction });
                 }
                 await transaction.commit();
                 return res.status(200).json({

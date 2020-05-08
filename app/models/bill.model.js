@@ -18,6 +18,9 @@ module.exports = (sequelize, Sequelize) => {
         },
         status: {
             type: Sequelize.INTEGER
+        },
+        shiptoaddress: {
+            type: Sequelize.STRING
         }
     });
     return Bill;
