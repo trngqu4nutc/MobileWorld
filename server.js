@@ -11,6 +11,7 @@ const catalogbrands = require("./app/routes/catalogbrands.route");
 const login = require("./app/routes/login.route");
 const basket = require("./app/routes/basket.route");
 const bill = require("./app/routes/bill.route");
+const history = require("./app/routes/history.route");
 
 const app = express();
 
@@ -68,6 +69,8 @@ app.use("/api/login", login);
 app.use("/api/basket", basket);
 
 app.use("/api/bill", bill);
+
+app.use("/api/history", history);
 
 const PORT = process.env.PORT || 8080;
 

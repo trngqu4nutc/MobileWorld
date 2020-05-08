@@ -86,10 +86,13 @@ exports.acceptBasket = async (req, res) => {
                 for (let i = 0; i < catalogs.length; i++) {
                     let catalog = await Catalog.findByPk(
                         catalogs[i],
-                        { attributes: ['id', 'name', 'pictureuri', 'price'] });
+                        { attributes: ['id', 'name', 'pictureuri', 'price', 'quantity'] });
                     let basket = await Basket.findOne({
                         where: { catalogid: catalogs[i], userid: parseInt(userid) }
                     });
+                    await Catalog.update(
+                        { quantity: catalog.quantity - parseInt(basket.unit) },
+                        { where: { id: catalog.id } });
                     await Bill.create({
                         catalogid: catalog.id,
                         name: catalog.name,
