@@ -96,7 +96,7 @@ exports.comfirmOrder = async (req, res) => {
 }
 
 //xem thong bao
-exports.viewNotifi = async (req, res) => {
+exports.viewNotify = async (req, res) => {
     try {
         let data = await Notification.findAll({ where: {userid: req.query.userid} });
         await Notification.update({ status: 2 }, { where: { userid: req.query.userid } });
