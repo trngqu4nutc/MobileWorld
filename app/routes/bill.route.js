@@ -5,8 +5,8 @@ const bill = require("../controllers/bill.controller");
 //localhost:8080/api/bill?userid=17
 router.get("/", bill.getAllBillById);
 
-//localhost:8080/api/bill/notifi?userid=17
-router.get("/notifi", bill.viewNotifi);
+//localhost:8080/api/bill/notify?userid=17
+router.get("/notify", bill.viewNotify);
 
 //localhost:8080/api/bill duyet don hang
 router.post("/", bill.comfirmOrder);
