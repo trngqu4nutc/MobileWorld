@@ -33,6 +33,8 @@ router.get("/load", catalog.getCatalogLoad);
 
 router.post("/", catalog.save);
 
+router.put("/", catalog.updateStatus);
+
 //localhost:8080/api/catalog/id
 router.delete("/:id", catalog.delete);
 

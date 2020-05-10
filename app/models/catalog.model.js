@@ -20,6 +20,10 @@ module.exports = (sequelize, Sequelize) => {
         },
         metatitle: {
             type: Sequelize.STRING(50)
+        },
+        status: {
+            type: Sequelize.BOOLEAN,
+            defaultValue: true
         }
     });
     return Catalog;
