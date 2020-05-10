@@ -17,6 +17,9 @@ router.get("/admin",
     [authJwt.verifyToken, authJwt.isAdmin],
     controller.adminBoard);
 
+//localhost:8080/api/user/all
+router.get("/user/all", controller.getAllUser);
+
 //update user
 router.put("/user", controller.update);
 

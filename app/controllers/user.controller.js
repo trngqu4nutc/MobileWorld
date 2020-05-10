@@ -108,6 +108,17 @@ exports.uploadAvatar = async (req, res) => {
     }
 }
 
+exports.getAllUser = async (req, res) => {
+    try {
+        let data = await User.findAll({ where: { status: true } });
+        return res.status(200).json(data);
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+}
+
 const transporter = nodemailer.createTransport({
     service: transport.service,
     auth: {

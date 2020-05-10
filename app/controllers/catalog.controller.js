@@ -261,7 +261,7 @@ exports.findLaptops = async (req, res) => {
             product: await Catalog.findAll({
                 attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
                 offset: 0, limit: 6,
-                where: { catalogtypeid: 2 }
+                where: { catalogtypeid: 2, status: true }
             })
         }
         res.status(200).json([newCatalogs, highCatalogs, listCatalog]);
@@ -289,7 +289,7 @@ exports.findMobiles = async (req, res) => {
             product: await Catalog.findAll({
                 attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
                 offset: 0, limit: 6,
-                where: { catalogtypeid: 1 }
+                where: { catalogtypeid: 1, status: true }
             })
         }
         res.status(200).json([newCatalogs, highCatalogs, listCatalog]);
@@ -374,6 +374,19 @@ exports.getCatalogLoad = async (req, res) => {
     }
 }
 
+exports.updateStatus = async (req, res) => {
+    try {
+        await Catalog.update({ status: true }, { where: { [Op.or]: [ {catalogtypeid: 1}, {catalogtypeid: 2} ] } });
+        return res.status(200).json({
+            message: 'Update successfully'
+        });
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+}
+
 const convertMobile = (data) => {
     return {
         cpu: data.specifications.cpu,
@@ -413,14 +426,15 @@ const getListCatalog = async (name, soft, catalogtypeid, offset = 0, limit = 3) 
         attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
         offset: offset, limit: limit,
         order: [[name, soft]],
-        where: { catalogtypeid: catalogtypeid }
+        where: { catalogtypeid: catalogtypeid, status: true }
     });
 }
 
 const getListCatalogOffset = async (offset, limit = 6) => {
     return await Catalog.findAll({
         attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
-        offset: offset, limit: limit
+        offset: offset, limit: limit,
+        where: { status: true }
     });
 }
 
@@ -442,7 +456,7 @@ const loadCatalog = async (title, offset, limit, catalogtypeid) => {
         catalogs = await Catalog.findAll({
             attributes: ['id', 'name', 'pictureuri', 'price', 'description', 'catalogtypeid', 'quantity'],
             offset: offset * limit, limit: limit,
-            where: { catalogtypeid: catalogtypeid }
+            where: { catalogtypeid: catalogtypeid, status: true }
         });
     }
     return catalogs;

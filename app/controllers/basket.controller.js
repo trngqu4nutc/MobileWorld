@@ -87,22 +87,31 @@ exports.acceptBasket = async (req, res) => {
                 for (let i = 0; i < idorders.length; i++) {
                     let catalog = await Catalog.findByPk(
                         idorders[i],
-                        { attributes: ['id', 'name', 'pictureuri', 'price', 'quantity'] });
+                        { attributes: ['id', 'name', 'pictureuri', 'price', 'quantity', 'status'] });
                     let basket = await Basket.findOne({
                         where: { catalogid: idorders[i], userid: parseInt(userid) }
                     });
                     await Catalog.update(
                         { quantity: catalog.quantity - parseInt(basket.unit) },
                         { where: { id: catalog.id } });
-                    await Bill.create({
-                        catalogid: catalog.id,
-                        name: catalog.name,
-                        pictureuri: catalog.pictureuri,
-                        unit: basket.unit,
-                        price: catalog.price,
-                        userid: userid,
-                        shiptoaddress: shiptoaddress
-                    }, { transaction });
+                    if(catalog.status == true){
+                        await Bill.create({
+                            catalogid: catalog.id,
+                            name: catalog.name,
+                            pictureuri: catalog.pictureuri,
+                            unit: basket.unit,
+                            price: catalog.price,
+                            userid: userid,
+                            shiptoaddress: shiptoaddress
+                        }, { transaction });
+                    }else{
+                        await transaction.rollback();
+                        return res.status(200).json({
+                            error: `Sản phẩm ${catalog.name} đã ngừng kinh doanh`
+                        });
+                    }
+                }
+                for (let i = 0; i < idorders.length; i++){
                     await Basket.destroy({ where: { catalogid: idorders[i], userid: userid } }, { transaction });
                 }
                 await transaction.commit();
