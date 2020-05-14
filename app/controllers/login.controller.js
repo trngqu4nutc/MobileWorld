@@ -6,7 +6,9 @@ const nodemailer = require("nodemailer");
 const transport = require("../config/email.config");
 
 const Op = db.Sequelize.Op;
-var bcrypt = require("bcryptjs");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const config = require("../config/auth.config");
 
 exports.login = async (req, res) => {
     let { username, password } = req.body;
@@ -14,7 +16,10 @@ exports.login = async (req, res) => {
         let user = await User.findOne({ where: { username: username } });
         if (user != null) {
             if (bcrypt.compareSync(password, user.password)) {
-                return res.status(200).json(castUser(user));
+                let token = jwt.sign({ id: user.id }, config.secret, {
+                    expiresIn: 86400 // 24 hours
+                });
+                return res.status(200).json(castUser(user, token));
             }
         }
         return res.status(200).json({
@@ -68,7 +73,10 @@ exports.loginByFacebook = async (req, res) => {
     try {
         let user = await User.findOne({ where: { username: "" + id } });
         if (user != null) {
-            return res.status(200).json(castUser(user));
+            let token = jwt.sign({ id: user.id }, config.secret, {
+                expiresIn: 86400 // 24 hours
+            });
+            return res.status(200).json(castUser(user, token));
         } else {
             user = await User.create({
                 username: "" + id,
@@ -76,7 +84,10 @@ exports.loginByFacebook = async (req, res) => {
                 fullname: fullname, email: email, gender: 0
             });
             await user.setRoles([1]);
-            return res.status(200).json(castUser(user));
+            let token = jwt.sign({ id: user.id }, config.secret, {
+                expiresIn: 86400 // 24 hours
+            });
+            return res.status(200).json(castUser(user, token));
         }
     } catch (error) {
         return res.status(500).json({
@@ -130,7 +141,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const castUser = (user) => {
+const castUser = (user, token) => {
     return {
         id: user.id,
         username: user.username,
@@ -138,7 +149,8 @@ const castUser = (user) => {
         email: user.email,
         address: user.address,
         phonenumber: user.phonenumber,
-        gender: user.gender
+        gender: user.gender,
+        token: token
     }
 }
 

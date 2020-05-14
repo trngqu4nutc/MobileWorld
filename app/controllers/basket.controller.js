@@ -4,7 +4,7 @@ const Bill = db.bill;
 const Catalog = db.catalog;
 
 exports.findAll = async (req, res) => {
-    let { userid } = req.query;
+    let userid = req.userid;
     console.log(userid);
     try {
         let data = await Basket.findAll({
@@ -22,7 +22,7 @@ exports.findAll = async (req, res) => {
 
 // add/update
 exports.addCatalogInCart = async (req, res) => {
-    let userid = req.headers['id'];
+    let userid = req.userid;
     let { catalogid, unit } = req.body;
     let transaction;
     try {
@@ -64,8 +64,7 @@ exports.addCatalogInCart = async (req, res) => {
 }
 
 exports.saveBill = async (req, res) => {
-    let userid = req.headers["id"];
-    let { catalogid, unitprice, unit } = req.body;
+    let { catalogid, unitprice, unit, userid } = req.body;
     try {
 
     } catch (error) {
@@ -76,7 +75,7 @@ exports.saveBill = async (req, res) => {
 }
 
 exports.acceptBasket = async (req, res) => {
-    let userid = req.headers["id"];
+    let userid = req.userid;
     let { idorders, shiptoaddress } = req.body;
     let transaction;
     try {
@@ -94,7 +93,7 @@ exports.acceptBasket = async (req, res) => {
                     await Catalog.update(
                         { quantity: catalog.quantity - parseInt(basket.unit) },
                         { where: { id: catalog.id } });
-                    if(catalog.status == true){
+                    if (catalog.status == true) {
                         await Bill.create({
                             catalogid: catalog.id,
                             name: catalog.name,
@@ -104,29 +103,24 @@ exports.acceptBasket = async (req, res) => {
                             userid: userid,
                             shiptoaddress: shiptoaddress
                         }, { transaction });
-                    }else{
+                    } else {
                         await transaction.rollback();
                         return res.status(200).json({
                             error: `Sản phẩm ${catalog.name} đã ngừng kinh doanh`
                         });
                     }
                 }
-                for (let i = 0; i < idorders.length; i++){
+                for (let i = 0; i < idorders.length; i++) {
                     await Basket.destroy({ where: { catalogid: idorders[i], userid: userid } }, { transaction });
                 }
                 await transaction.commit();
                 return res.status(200).json({
                     message: "Accept on cart successfully"
                 });
-            } else {
-                await transaction.rollback();
-                return res.status(500).json({
-                    error: `Can not Accept on cart`
-                });
             }
         } else {
             await transaction.rollback();
-            return res.status(500).json({
+            return res.status(200).json({
                 error: `Can not Accept on cart`
             });
         }
@@ -141,8 +135,9 @@ exports.acceptBasket = async (req, res) => {
 }
 
 exports.deleteOnCart = async (req, res) => {
-    let userid = req.headers["id"];
-    let catalogids = req.body;
+    let userid = req.userid;
+    let { catalogids } = req.body;
+    // console.log(catalogids);
     let transaction;
     try {
         transaction = await db.sequelize.transaction();

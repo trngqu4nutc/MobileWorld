@@ -5,7 +5,8 @@ const Notification = db.notification;
 
 
 exports.getAllBillById = async (req, res) => {
-    let { userid, type } = req.query;
+    let userid = req.userid;
+    let { type } = req.query;
     try {
         let data = await Bill.findAll({ where: { userid: userid, status: type } });
         return res.json(data);
@@ -18,12 +19,13 @@ exports.getAllBillById = async (req, res) => {
 
 //user check
 exports.updateCatalog = async (req, res) => {
+    let userid = req.userid;
     let id = req.body.idbill;
     let status = req.body.status;
     let transaction;
     try {
         transaction = await db.sequelize.transaction();
-        let data = await Bill.findOne({ where: { id: id } });
+        let data = await Bill.findOne({ where: { id: id, userid: userid } });
         let catalog = await Catalog.findByPk(
             data.catalogid,
             { attributes: ['quantity'] });
@@ -61,7 +63,7 @@ exports.updateCatalog = async (req, res) => {
                 });
             }
         }
-        return res.status(500).json({
+        return res.status(200).json({
             error: "Order does not exist!"
         })
     } catch (error) {
@@ -97,9 +99,10 @@ exports.comfirmOrder = async (req, res) => {
 
 //xem thong bao
 exports.viewNotify = async (req, res) => {
+    let userid = req.userid;
     try {
-        let data = await Notification.findAll({ where: {userid: req.query.userid} });
-        await Notification.update({ status: 2 }, { where: { userid: req.query.userid } });
+        let data = await Notification.findAll({ where: {userid: userid} });
+        await Notification.update({ status: 2 }, { where: { userid: userid } });
         return res.status(200).json(data);
     } catch (error) {
         return res.status(500).json({

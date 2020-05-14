@@ -6,23 +6,23 @@ const User = db.user;
 verifyToken = (req, res, next) => {
     let token = req.headers["x-access-token"];
     if (!token) {
-        return res.status(403).send({
+        return res.status(200).json({
             message: "Unauthorized"
         });
     }
     jwt.verify(token, config.secret, (err, decode) => {
         if (err) {
-            return res.status(401).send({
+            return res.status(200).json({
                 message: "Unauthorized"
             });
         }
-        req.userId = decode.id;
+        req.userid = decode.id;
         next();
     });
 };
 
 isAdmin = (req, res, next) => {
-    User.findByPk(req.userId).then((user) => {
+    User.findByPk(req.body.userid).then((user) => {
         user.getRoles().then((roles) => {
             for (let i=0; i < roles.length; i++) {
                 if (roles[i].name === "admin") {
