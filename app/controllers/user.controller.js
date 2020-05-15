@@ -18,17 +18,15 @@ exports.adminBoard = (req, res) => {
 }
 
 exports.update = async (req, res) => {
+    let id = req.userid;
     let user = req.body;
     console.log(user);
-    if(user.password){
-        user.password = bcrypt.hashSync(user.password, 12);
-    }
     try {
-        let data = await User.update(user, { where: { id: user.id } });
+        let data = await User.update(user, { where: { id: id } });
         if(data == 1){
-            user = await User.findByPk(user.id, { attributes: ['id', 'username', 'fullname','email', 'phonenumber', 'address', 'gender'] });
+            user = await User.findByPk(id, { attributes: ['id', 'username', 'fullname','email', 'phonenumber', 'address', 'gender'] });
             res.status(200).json(user);
-        }else{s
+        }else{
             res.status(200).json({
                 message: `Can not update with username: ${user.username}!`
             });
@@ -41,7 +39,7 @@ exports.update = async (req, res) => {
 }
 
 exports.findUserById = async (req, res) => {
-    let {id} = req.params;
+    let id = req.userid;
     try {
         let user = await User.findByPk(id, { attributes: ['id', 'username', 'fullname', 'email', 'phonenumber', 'address'] });
         if(user != null){
@@ -59,7 +57,8 @@ exports.findUserById = async (req, res) => {
 }
 
 exports.changePassword = async (req, res) => {
-    let { id, oldpassword, newpassword } = req.body;
+    let id = req.userid;
+    let { oldpassword, newpassword } = req.body;
     try {
         var user = await User.findByPk(id);
         if(bcrypt.compareSync(oldpassword, user.password)){
