@@ -24,7 +24,7 @@ router.get("/user/all", controller.getAllUser);
 router.put("/user", [authJwt.verifyToken], controller.update);
 
 //update avatar
-router.put("/user/image", upload.single("file"), controller.uploadAvatar);
+router.put("/user/image", [authJwt.verifyToken], upload.single("file"), controller.uploadAvatar);
 
 
 //change password

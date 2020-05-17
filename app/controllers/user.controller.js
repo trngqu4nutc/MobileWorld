@@ -92,7 +92,7 @@ exports.uploadAvatar = async (req, res) => {
     try {
         let path = req.file.path.split('\\')[2];
         if (path.length > 0) {
-            await User.update({ avatar: path }, { where: { id: req.headers["id"] } });
+            await User.update({ avatar: path }, { where: { id: req.userid } });
             return res.status(200).json({
                 message: "Thay đổi ảnh đại diện thành công!"
             });
