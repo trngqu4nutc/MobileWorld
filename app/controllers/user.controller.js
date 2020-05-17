@@ -41,7 +41,7 @@ exports.update = async (req, res) => {
 exports.findUserById = async (req, res) => {
     let id = req.userid;
     try {
-        let user = await User.findByPk(id, { attributes: ['id', 'username', 'fullname', 'email', 'phonenumber', 'address'] });
+        let user = await User.findByPk(id, { attributes: ['id', 'username', 'fullname', 'email', 'phonenumber', 'address', 'avatar'] });
         if(user != null){
             return res.status(200).json(user);
         }else{
