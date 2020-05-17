@@ -150,6 +150,7 @@ const castUser = (user, token) => {
         address: user.address,
         phonenumber: user.phonenumber,
         gender: user.gender,
+        avatar: user.avatar,
         token: token
     }
 }
